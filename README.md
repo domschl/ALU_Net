@@ -1,2 +1,2 @@
-# APU_Net
-Create an APU (arithmetic processing unit) via neural nets
+# ALU_Net
+Create an ALU (arithmetic logic unit) via neural nets
