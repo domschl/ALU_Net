@@ -1,5 +1,6 @@
 # ALU_Net [WIP]
-Create an ALU (arithmetic logic unit) via neural nets using Colab TPUs
+Create an ALU (arithmetic logic unit) via neural nets using Colab TPUs, GPUs are on local Jupyter instances.
+If used with Colab, user's Google Drive is used for persistant storage.
 
 _This is work in progress_
 
