@@ -7,9 +7,9 @@ _This is work in progress_
 
 <img align="right" width="300" src="https://github.com/domschl/ALU_Net/blob/main/resources/ALU.png">
 The neural network is expected to learn arithmetic and logic operations between two unsigned 15 bit integers. The possible operations are: '`+`', '`-`', '`/`' (integer division), '`*`', '`%`' (modulo), '`AND`' boolean bitwise and, '`OR`' boolean bitwise or, '`XOR`' boolean bitwise xor and the comparators '`=`', '`<`', '`>`', '`!=`'.
-Each integer is encoded as 15 input neurons (`0.0` level for bit zero, `1.0` level for bit one), the operation is encoded binary as 4 neurons (e.g. addition: `0.0, 0.0, 0.0, 0.0`; subtraction: `0.0, 0.0, 0.0, 1.0` etc.)
+Each integer is encoded as 16 input neurons [only 15 bits are currently used, positive ints only -- this might change] (`0.0` level for bit zero, `1.0` level for bit one), the operation is encoded binary as 4 neurons (e.g. addition: `0.0, 0.0, 0.0, 0.0`; subtraction: `0.0, 0.0, 0.0, 1.0` etc.)
 The result of the network is a 32 bit integer again binary encoded. The value `True` is encoded as `0b1111111111111111`, `False` is `0b0000000000000000`.
-The input vector has dimension 34 (`2*15 + 4`), the output has dimension 32.
+The input vector has dimension 36 (`2*16 + 4`), the output has dimension 32.
 
 ### Example results after a short period of training
 
