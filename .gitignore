@@ -1,2 +1,5 @@
 .DS_Store
-
+.ipynb_checkpoints/
+logs/
+data_cache*
+math_model*
