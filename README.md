@@ -6,6 +6,8 @@
 Create an ALU (arithmetic logic unit) via neural nets using Colab TPUs, GPUs are on local Jupyter instances.
 If used with Colab, user's Google Drive is used for persistant storage.
 
+It can be used with Mac M1 GPU, if [Apple's tensorflow plugin](https://developer.apple.com/metal/tensorflow-plugin/) is installed.
+
 _This is work in progress_
 
 ## Experiment
@@ -19,9 +21,14 @@ The input vector has dimension 36 (`2*16 + 4`), the output has dimension 32.
 
 ### Example results after a short period of training
 
-This shows one the left two integers with on of the 12 operations, followed by `=` and the result the net determined,
-followed by `==` and the actual correct result. In case of an error, a binary representation of expected and actual 
-result are shown.
+This shows lines in format:
+
+
+```
+<int> <operation> <int> = <net-eval> ==/!= <actual result> OK/Error
+```
+
+In case of an error, a binary representation of expected and actual result are shown.
 The most difficult operation for the net to learn seems to be multiplication.
 ```
 31720 / 4697 = 6 == 6: OK
