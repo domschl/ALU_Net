@@ -57,6 +57,23 @@ The most difficult operation for the net to learn seems to be multiplication.
 20433 % 17561 = 2872 == 2872: OK
 ```
 
+## Different hardware platforms
+
+Currently support are
+
+- Local jupyter instances with a local graphics card
+- Mac M1 metal graphics with local jupyter instance and Apple's tensorflow-plugin
+- Google Colab instances with either GPU or TPU runtime. The colab version uses a Google Drive account to cache data and model state within a Google Drive directory `My Drive/Colab Notebooks/ALU_Net`.
+
+It's possible to start training on one platform (e.g. Google Colab TPU) and then transfer the result to local hardware (e.g. a Mac M1).
+
+Colab notebooks store the trained model in the user's Google Drive (the notebook will request access to the drive) at `My Drive/Colab Notebooks/ALU_Net`.
+For local jupyter instances both training data caches and model are stored in the directory of the notebook.
+
+All hardware (Colab GPUs) and local GPUs, with exception of Colab TPUs store the complete model state in a directory `math_model_*` that contains are parameter (weights, optimizer states) or the training process. Simply copy that directory to tranfer the training progress.
+
+Since (as far as I know) exporting the complete model for TPUs to local colab (or drive) instances is not supported, TPUs only save the model weights as single file `math_model_*.h5`. It's possible to copy that file from Google Drive to a local jupyter instance and it will be imported on the first run. Thus training from TPUs can be transfered to local machines.
+
 ## Unsorted notes
 
 ### TPU Notes
