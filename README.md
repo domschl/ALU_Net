@@ -74,6 +74,11 @@ All hardware (Colab GPUs) and local GPUs, with exception of Colab TPUs store the
 
 Since (as far as I know) exporting the complete model for TPUs to local colab (or drive) instances is not supported, TPUs only save the model weights as single file `math_model_*.h5`. It's possible to copy that file from Google Drive to a local jupyter instance and it will be imported on the first run. Thus training from TPUs can be transfered to local machines.
 
+## Customizing models and training
+
+* The function create_load_model() creates (or loads the state from either Google Drive or local filesystem) one of three currently defined models: `minimal`, `medium` and `large`. To try different models simply at one to this function. At training-time the model is selected by the global `model_type=`
+* The global `valid_ops` determines if all 12 ALU operation (`+`, `-`, `*`, .. `!=`) are used or only a subset. If `valid_ops` is `None`, all 12 operations are trained, alternatively a list of operations can be given: `valid_ops = ['*', '/']` would only train the model on multiplication and division.
+
 ## Unsorted notes
 
 ### TPU Notes
