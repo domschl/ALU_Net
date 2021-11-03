@@ -118,8 +118,7 @@ class MLEnv():
                     print("You are not on a Colab instance, so no Google Drive access is possible.")
                 return False, None
 
-        # TODO: This is too project-specific, should be moved out.
-        def init_paths(self, model_type='large', log_to_gdrive=False):
+        def init_paths(self, project_name='project', model_name='model', model_variant=None, log_to_gdrive=False):
             self.save_model = True
             self.model_file=None
             self.cache_stub=None
@@ -134,14 +133,18 @@ class MLEnv():
 
             if self.save_model:
                 if self.is_colab:
-                    self.project_path=os.path.join(self.root_path,"Colab Notebooks/ALU_Net")
+                    self.project_path=os.path.join(self.root_path,f"Colab Notebooks/{project_name}")
                     if log_to_gdrive is True:
-                        self.log_mirror_path = os.path.join(self.root_path,"Colab Notebooks/ALU_Net/logs")
+                        self.log_mirror_path = os.path.join(self.root_path,f"Colab Notebooks/{project_name}/logs")
                 else:
                     self.project_path=self.root_path
-                self.model_file=os.path.join(project_path,f'math_model_{model_type}')
-                self.cache_stub=os.path.join(project_path,'data_cache')
-                self.weights_file=os.path.join(project_path,f'math_model_{model_type}.h5')
+                if model_variant is None:
+                    self.model_file=os.path.join(self.project_path,f"{model_name}.h5")
+                    self.weights_file=os.path.join(self.project_path,f"{model_name}_weights.h5")
+                else:
+                    self.model_file=os.path.join(self.project_path,f"{model_name}_{model_variant}.h5")
+                    self.weights_file=os.path.join(self.project_path,f"{model_name}_{model_variant}_weights.h5")
+                self.cache_stub=os.path.join(self.project_path,'data_cache')
                 if self.is_tpu is False:
                     print(f"Model save-path: {self.model_file}")
                 else:
