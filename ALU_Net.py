@@ -13,9 +13,6 @@
 
 # ## 1. Configuration and setup
 
-# In[ ]:
-
-
 import sys
 import os
 import random
@@ -25,15 +22,14 @@ import tensorflow as tf
 
 from tensorflow.python.client import device_lib
 
-use_keras_project=False
-
+use_keras_project_versions=False
 # Namespaces, namespaces
-if use_keras_project is False:
-    print("Importing Keras from tensorflow project (it won't work otherwise with TPU)")
+if use_keras_project_versions is False:
+    # print("Importing Keras from tensorflow project (it won't work otherwise with TPU)")
     from tensorflow import keras
     from tensorflow.keras import layers, regularizers, callbacks, metrics, optimizers
 else:
-    print("Importing Keras from keras project (which had recently declared independence [again]) -- as recommended")
+    # print("Importing Keras from keras project (which had recently declared independence [again]) -- as recommended")
     import keras
     from keras import layers, regularizers, callbacks, metrics, optimizers
 
