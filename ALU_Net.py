@@ -120,9 +120,9 @@ class MLEnv():
                 print("You are not on a Colab instance, so no Google Drive access is possible.")
             return False, None
 
-    def init_paths(self, project_name='project', model_name='model', model_variant=None, log_to_gdrive=False):
+    def init_paths(self, project_name, model_name, model_variant=None, log_to_gdrive=False):
         self.save_model = True
-        self.model_file=None
+        self.model_save_dir=None
         self.cache_stub=None
         self.weights_file = None
         self.project_path = None
@@ -141,18 +141,18 @@ class MLEnv():
             else:
                 self.project_path=self.root_path
             if model_variant is None:
-                self.model_file=os.path.join(self.project_path,f"{model_name}.h5")
+                self.model_save_dir=os.path.join(self.project_path,f"{model_name}")
                 self.weights_file=os.path.join(self.project_path,f"{model_name}_weights.h5")
             else:
-                self.model_file=os.path.join(self.project_path,f"{model_name}_{model_variant}.h5")
+                self.model_save_dir=os.path.join(self.project_path,f"{model_name}_{model_variant}")
                 self.weights_file=os.path.join(self.project_path,f"{model_name}_{model_variant}_weights.h5")
             self.cache_stub=os.path.join(self.project_path,'data_cache')
             if self.is_tpu is False:
-                print(f"Model save-path: {self.model_file}")
+                print(f"Model save-path: {self.model_save_dir}")
             else:
                 print(f"Weights save-path: {self.weights_file}")
             print(f'Data cache file-stub {self.cache_stub}')
-        return self.model_file, self.weights_file, self.cache_stub, self.log_path
+        return self.model_save_dir, self.weights_file, self.cache_stub, self.log_path
 
 
 # ## Training data
@@ -738,8 +738,8 @@ def create_load_model(save_path=None, model_variant=None):
             opti = optimizers.Adam(learning_rate=0.001)
         model.compile(loss="mean_squared_error", optimizer=opti, metrics=[metrics.MeanSquaredError(), 'accuracy'])
     else:
-        print(f"Loading standard-format model of type {model_variant} from {model_file}")
-        model = tf.keras.models.load_model(model_file)
+        print(f"Loading standard-format model of type {model_variant} from {model_save_dir}")
+        model = tf.keras.models.load_model(save_path)
         print("Continuing training from existing model")
     model.summary()
     return model
@@ -754,10 +754,10 @@ def get_model(ml_env, save_path=None, on_tpu=False, model_variant=None, import_w
         with tpu_strategy.scope():
             print("Creating TPU-scope model")
             model=create_load_model(save_path=None, model_variant=model_variant)
-        if weights_file is not None and os.path.exists(weights_file):
+        if ml_env.weights_file is not None and os.path.exists(ml_env.weights_file):
             print("Injecting saved weights into TPU model, loading...")
             temp_model = create_load_model(save_path=None, model_variant=model_variant)
-            temp_model.load_weights(weights_file)
+            temp_model.load_weights(ml_env.weights_file)
             print("Injecting...")
             model.set_weights(temp_model.get_weights())
             print("Updated TPU weights from saved model")
@@ -765,12 +765,12 @@ def get_model(ml_env, save_path=None, on_tpu=False, model_variant=None, import_w
     else:
         print("Creating standard-scope model")
         model = create_load_model(save_path=save_path, model_variant=model_variant)
-        if import_weights is True and weights_file is not None and os.path.exists(weights_file):
+        if import_weights is True and ml_env.weights_file is not None and os.path.exists(ml_env.weights_file):
             print("Injecting saved weights into model, loading...")        
-            model.load_weights(weights_file)
-            imported_weights_file = weights_file+'-imported'
-            os.rename(weights_file, imported_weights_file)
-            print(f"Renamed weights file {weights_file} to {imported_weights_file} to prevent further imports!")
+            model.load_weights(ml_env.weights_file)
+            imported_weights_file = ml_env.weights_file+'-imported'
+            os.rename(ml_env.weights_file, imported_weights_file)
+            print(f"Renamed weights file {ml_env.weights_file} to {imported_weights_file} to prevent further imports!")
         return model
 
 
@@ -818,17 +818,17 @@ def math_train(mlenv:MLEnv, model, dataset, validation, batch_size=8192, epochs=
     finally:
         return interrupted
 
-def instantiate_models(ml_env:MLEnv, model_file, model_variant, import_weights=True):
+def instantiate_models(ml_env:MLEnv, save_path, model_variant, import_weights=True):
     if ml_env.is_tpu:
         # Generate a second CPU model for testing:
         test_model = get_model(ml_env, save_path=None, on_tpu=False, model_variant=model_variant)
-        math_model = get_model(ml_env, save_path=model_file, on_tpu=True, model_variant=model_variant)
+        math_model = get_model(ml_env, save_path=save_path, on_tpu=True, model_variant=model_variant)
     else:
         test_model = None
-        math_model = get_model(ml_env, save_path=model_file, on_tpu=False, model_variant=model_variant, import_weights=import_weights)
+        math_model = get_model(ml_env, save_path=save_path, on_tpu=False, model_variant=model_variant, import_weights=import_weights)
     return math_model, test_model
 
-def do_training(mlenv:MLEnv, math_model, training_dataset, validation_dataset, math_data, epochs_per_cycle, model_file=None, 
+def do_training(mlenv:MLEnv, math_model, training_dataset, validation_dataset, math_data, epochs_per_cycle, model_save_dir=None, 
                 weights_file=None, test_model=None, cycles=100, steps_per_epoch=1000, reweight_size=1000, valid_ops=None, regenerate_data_after_cycles=0, data_func=None,
                 log_path='./logs'):
     # Training
@@ -857,9 +857,9 @@ def do_training(mlenv:MLEnv, math_model, training_dataset, validation_dataset, m
                 print(f"Checking {reweight_size} datapoints for accuracy...")
                 math_data.check_results(test_model, samples=reweight_size, short_math=False, valid_ops=valid_ops, verbose=False)
             else:
-                if model_file is not None:
+                if model_save_dir is not None:
                     print("Saving math-model")
-                    math_model.save(model_file)
+                    math_model.save(model_save_dir)
                     print("Done")
                 print(f"Checking {reweight_size} datapoints for accuracy...")
                 math_data.check_results(math_model, samples=reweight_size, short_math=False, valid_ops=valid_ops, verbose=False)
@@ -889,11 +889,11 @@ steps_per_epoch=samples//batch_size  # TPU stuff
 ml_env=MLEnv()
 math_data=ALU_Dataset(ml_env)
 
-model_file, weights_file, cache_stub, log_path = ml_env.init_paths(model_variant=model_variant, log_to_gdrive=True)
+model_save_dir, weights_file, cache_stub, log_path = ml_env.init_paths("ALU_Net", "math_model", model_variant=model_variant, log_to_gdrive=True)
 
 train, val = math_data.get_datasets(pre_weight=True, samples=samples, validation_samples=50000, batch_size=batch_size, short_math=False, 
                                      valid_ops=valid_ops, cache_file_stub=cache_stub, use_cache=True, regenerate_cached_data=False)
-math_model, test_model = instantiate_models(ml_env, model_file, model_variant, import_weights=True)
+math_model, test_model = instantiate_models(ml_env, model_save_dir, model_variant, import_weights=True)
 
 
 try:
@@ -902,7 +902,7 @@ try:
 except:
     pass
 
-do_training(ml_env, math_model, train, val, math_data, epochs_per_cycle, model_file=model_file, 
+do_training(ml_env, math_model, train, val, math_data, epochs_per_cycle, model_save_dir=model_save_dir, 
             weights_file=weights_file, test_model=test_model, cycles=cycles, steps_per_epoch=steps_per_epoch, valid_ops=valid_ops, 
             regenerate_data_after_cycles=regenerate_data_after_cycles, data_func=None, log_path=log_path)
 
