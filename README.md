@@ -8,6 +8,9 @@ If used with Colab, user's Google Drive is used for persistant storage.
 
 It can be used with Mac M1 GPU, if [Apple's tensorflow plugin](https://developer.apple.com/metal/tensorflow-plugin/) is installed.
 
+If used with Google Colab, a Google Drive account is used to save trained model data and tensorboard logs to your google drive.
+This allows easy exporting of trained nets and using remote Tensorboard instances to monitor the training on Colab.
+
 _This is work in progress_
 
 ## Experiment
