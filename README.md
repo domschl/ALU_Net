@@ -79,10 +79,18 @@ Since (as far as I know) exporting the complete model for TPUs to local colab (o
 
 ## Customizing models and training
 
-* The function create_load_model() creates (or loads the state from either Google Drive or local filesystem) one of three currently defined models: `minimal`, `medium` and `large`. To try different models simply at one to this function. At training-time the model is selected by the global `model_type=`
+* The function create_load_model() creates (or loads the state from either Google Drive or local filesystem) one several pre-defined models: e.g. `minimal`, `medium` and `large`, referred in dictionary `model_variants`. To try different models simply at one to this function. At training-time the model is selected by the global `model_variant=`
 * The global `valid_ops` determines if all 12 ALU operation (`+`, `-`, `*`, .. `!=`) are used or only a subset. If `valid_ops` is `None`, all 12 operations are trained, alternatively a list of operations can be given: `valid_ops = ['*', '/']` would only train the model on multiplication and division.
 
 ## Unsorted notes
+
+### Colab and remote Tensorboard via Google Drive sync
+
+If you have Google Drive sync for the directory `My Drive/Colab Notebooks/ALU_Net/logs` activated on a remote desktop, a remote Tensorboard instance can display the training progress. You simply need to figure out the physical destination of the files Google Drive syncs. On a Mac that would be by default like this:
+
+```
+tensorboard --logdir /Volumes/GoogleDrive/My\ Drive/Colab\ Notebooks/ALU_Net/logs
+```
 
 ### TPU Notes
 
