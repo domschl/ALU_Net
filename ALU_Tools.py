@@ -119,6 +119,7 @@ class MLEnv():
                 self.project_path=os.path.join(self.root_path,f"Colab Notebooks/{project_name}")
                 if log_to_gdrive is True:
                     self.log_mirror_path = os.path.join(self.root_path,f"Colab Notebooks/{project_name}/logs")
+                    print(f"Logs will be mirrored to {self.log_mirror_path}, they can be used with a remote Tensorboard instance.")
             else:
                 self.project_path=self.root_path
             if model_variant is None:
@@ -143,7 +144,7 @@ class MLEnv():
                     if os.path.exists(self.log_mirror_path) is True:
                         shutil.rmtree(self.log_mirror_path)
                     shutil.copytree(self.log_path, self.log_mirror_path)
-                    print(f"Logs mirrored to {self.log_mirror_path}")
+                    print(f"Tensorboard data mirrored to {self.log_mirror_path}")
                 else:
                     print(f"Log-mirror path is not valid: {self.log_mirror_path}, it needs to end with '/logs' as sanity-check")
 
