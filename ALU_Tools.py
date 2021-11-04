@@ -9,6 +9,11 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
+try:
+    from google.colab import drive
+except:
+    pass
+
 class MLEnv():
     def __init__(self):
         self.flush_timer = 0
@@ -22,7 +27,6 @@ class MLEnv():
             from google.colab import drive
             is_colab = True
             get_ipython().run_line_magic('load_ext', 'tensorboard')
-
             try:
                 get_ipython().run_line_magic('tensorflow_version', '2.x')
             except:
