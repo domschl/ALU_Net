@@ -13,6 +13,8 @@
 
 # ## 1. Configuration and setup
 
+import os
+import numpy as np
 import tensorflow as tf
 
 use_keras_project_versions=False

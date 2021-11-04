@@ -6,6 +6,7 @@ import time
 import shutil
 import numpy as np
 
+import tensorflow as tf
 from tensorflow.python.client import device_lib
 
 class MLEnv():
@@ -137,7 +138,7 @@ class MLEnv():
                 shutil.copytree(self.log_path, self.log_mirror_path)
                 print(f"Logs mirrored to {self.log_mirror_path}")
 
-    def epoch_time_func(self):
+    def epoch_time_func(self, epoch, log):
         if self.log_to_gdrive is True:
             if time.time() - self.flush_timer > self.flush_timeout:
                 self.flush_timer=time.time()

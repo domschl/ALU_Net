@@ -4,3 +4,4 @@ logs/
 data_cache*
 math_model*
 .vscode/
+__pycache__/
