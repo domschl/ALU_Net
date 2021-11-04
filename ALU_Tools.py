@@ -139,8 +139,13 @@ class MLEnv():
         # copy directory self.log_path to self.log_mirror_path
         if self.log_to_gdrive is True:
             if self.log_mirror_path is not None:
-                shutil.copytree(self.log_path, self.log_mirror_path)
-                print(f"Logs mirrored to {self.log_mirror_path}")
+                if len(self.log_mirror_path)>4 and self.log_mirror_path[-5:]=='/logs':
+                    if os.path.exists(self.log_mirror_path):
+                        shutil.rmtree(self.log_mirror_path)
+                    shutil.copytree(self.log_path, self.log_mirror_path)
+                    print(f"Logs mirrored to {self.log_mirror_path}")
+                else:
+                    print(f"Log-mirror path is not valid: {self.log_mirror_path}, it needs to end with '/logs' as sanity-check")
 
     def epoch_time_func(self, epoch, log):
         if self.log_to_gdrive is True:
