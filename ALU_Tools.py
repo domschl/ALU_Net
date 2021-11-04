@@ -17,7 +17,7 @@ except:
 class MLEnv():
     def __init__(self):
         self.flush_timer = 0
-        self.flush_timeout = 120
+        self.flush_timeout = 180
         self.is_colab = self.check_colab()
         self.check_hardware()
 
@@ -140,7 +140,7 @@ class MLEnv():
         if self.log_to_gdrive is True:
             if self.log_mirror_path is not None:
                 if len(self.log_mirror_path)>4 and self.log_mirror_path[-5:]=='/logs':
-                    if os.path.exists(self.log_mirror_path):
+                    if os.path.exists(self.log_mirror_path) is True:
                         shutil.rmtree(self.log_mirror_path)
                     shutil.copytree(self.log_path, self.log_mirror_path)
                     print(f"Logs mirrored to {self.log_mirror_path}")
