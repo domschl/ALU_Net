@@ -30,6 +30,7 @@ if use_keras_project_versions is False:
     from tensorflow.keras import layers, regularizers, callbacks, metrics, optimizers
 else:
     # print("Importing Keras from keras project (which had recently declared independence [again]) -- as recommended")
+    use_keras_project_versions=True
     import keras
     from keras import layers, regularizers, callbacks, metrics, optimizers
 
@@ -58,6 +59,7 @@ class MLEnv():
     # Hardware check:
     def check_hardware(self, verbose=True):
         self.is_tpu = False
+        self.tpu_is_init = False
         self.is_gpu = False
         self.tpu_address = None
 
@@ -99,58 +101,58 @@ class MLEnv():
             if verbose is True:
                 print("TPU: eager execution disabled!")
 
-        def mount_gdrive(self, mount_point="/content/drive", root_path="/content/drive/My Drive", verbose=True):
-            if self.is_colab is True:
-                if verbose is True:
-                    print("You will now be asked to authenticate Google Drive access in order to store training data (cache) and model state.")
-                    print("Changes will only happen within Google Drive directory `My Drive/Colab Notebooks/ALU_Net`.")
-                if not os.path.exists(root_path):
-                    # drive.flush_and_unmount()
-                    drive.mount(mount_point) #, force_remount=True)
-                    return True, root_path
-                if not os.path.exists(root_path):
-                    print(f"Something went wrong with Google Drive access. Cannot save model to {root_path}")
-                    return False, None
-                else:
-                    return True, root_path
-            else:
-                if verbose is True:
-                    print("You are not on a Colab instance, so no Google Drive access is possible.")
+    def mount_gdrive(self, mount_point="/content/drive", root_path="/content/drive/My Drive", verbose=True):
+        if self.is_colab is True:
+            if verbose is True:
+                print("You will now be asked to authenticate Google Drive access in order to store training data (cache) and model state.")
+                print("Changes will only happen within Google Drive directory `My Drive/Colab Notebooks/ALU_Net`.")
+            if not os.path.exists(root_path):
+                # drive.flush_and_unmount()
+                drive.mount(mount_point) #, force_remount=True)
+                return True, root_path
+            if not os.path.exists(root_path):
+                print(f"Something went wrong with Google Drive access. Cannot save model to {root_path}")
                 return False, None
-
-        def init_paths(self, project_name='project', model_name='model', model_variant=None, log_to_gdrive=False):
-            self.save_model = True
-            self.model_file=None
-            self.cache_stub=None
-            self.weights_file = None
-            self.project_path = None
-            self.log_path = "./logs"
-            self.log_mirror_path = None
-            if self.is_colab:
-                self.save_model, self.root_path = mount_gdrive()
             else:
-                self.root_path='.'
+                return True, root_path
+        else:
+            if verbose is True:
+                print("You are not on a Colab instance, so no Google Drive access is possible.")
+            return False, None
 
-            if self.save_model:
-                if self.is_colab:
-                    self.project_path=os.path.join(self.root_path,f"Colab Notebooks/{project_name}")
-                    if log_to_gdrive is True:
-                        self.log_mirror_path = os.path.join(self.root_path,f"Colab Notebooks/{project_name}/logs")
-                else:
-                    self.project_path=self.root_path
-                if model_variant is None:
-                    self.model_file=os.path.join(self.project_path,f"{model_name}.h5")
-                    self.weights_file=os.path.join(self.project_path,f"{model_name}_weights.h5")
-                else:
-                    self.model_file=os.path.join(self.project_path,f"{model_name}_{model_variant}.h5")
-                    self.weights_file=os.path.join(self.project_path,f"{model_name}_{model_variant}_weights.h5")
-                self.cache_stub=os.path.join(self.project_path,'data_cache')
-                if self.is_tpu is False:
-                    print(f"Model save-path: {self.model_file}")
-                else:
-                    print(f"Weights save-path: {self.weights_file}")
-                print(f'Data cache file-stub {self.cache_stub}')
-            return self.model_file, self.weights_file, self.cache_stub, self.log_path
+    def init_paths(self, project_name='project', model_name='model', model_variant=None, log_to_gdrive=False):
+        self.save_model = True
+        self.model_file=None
+        self.cache_stub=None
+        self.weights_file = None
+        self.project_path = None
+        self.log_path = "./logs"
+        self.log_mirror_path = None
+        if self.is_colab:
+            self.save_model, self.root_path = mount_gdrive()
+        else:
+            self.root_path='.'
+
+        if self.save_model:
+            if self.is_colab:
+                self.project_path=os.path.join(self.root_path,f"Colab Notebooks/{project_name}")
+                if log_to_gdrive is True:
+                    self.log_mirror_path = os.path.join(self.root_path,f"Colab Notebooks/{project_name}/logs")
+            else:
+                self.project_path=self.root_path
+            if model_variant is None:
+                self.model_file=os.path.join(self.project_path,f"{model_name}.h5")
+                self.weights_file=os.path.join(self.project_path,f"{model_name}_weights.h5")
+            else:
+                self.model_file=os.path.join(self.project_path,f"{model_name}_{model_variant}.h5")
+                self.weights_file=os.path.join(self.project_path,f"{model_name}_{model_variant}_weights.h5")
+            self.cache_stub=os.path.join(self.project_path,'data_cache')
+            if self.is_tpu is False:
+                print(f"Model save-path: {self.model_file}")
+            else:
+                print(f"Weights save-path: {self.weights_file}")
+            print(f'Data cache file-stub {self.cache_stub}')
+        return self.model_file, self.weights_file, self.cache_stub, self.log_path
 
 
 # ## Training data
@@ -162,7 +164,8 @@ class ALU_Dataset():
     # arbitrary op1, op2 (positive integers, 0..32767) and 
     # the twelve supported ops 
 
-    def __init__(self, pre_weight=False):
+    def __init__(self, ml_env:MLEnv, pre_weight=False):
+        self.ml_env=ml_env
         self.model_ops = ["+", "-", "*", "/", "%",
                           "AND", "OR", "XOR", ">", "<", "=", "!="]
         self.model_is_boolean = [False, False, False, False, False,
@@ -451,7 +454,7 @@ class ALU_Dataset():
         shuffle_buffer=10000
         dataset=tf.data.Dataset.from_tensor_slices((x, Y)).cache()
         dataset=dataset.shuffle(shuffle_buffer, reshuffle_each_iteration=True)
-        if is_tpu is True:
+        if self.ml_env.is_tpu is True:
             dataset=dataset.repeat() # Mandatory for Keras TPU for now
         dataset=dataset.batch(batch_size, drop_remainder=True) # drop_remainder is important on TPU, batch size must be fixed
         dataset=dataset.prefetch(-1) # fetch next batches while training on the current one (-1: autotune prefetch buffer size)
@@ -465,7 +468,14 @@ class ALU_Dataset():
                     tf.TensorSpec(shape=(None,32), dtype=np.float32))
             )
         return dataset
-        
+
+    def get_datasets(self, pre_weight=True, samples=100000, validation_samples=10000, batch_size=2000, short_math=False, valid_ops=None, cache_file_stub='cache', use_cache=True, regenerate_cached_data=False):
+        train = self.create_dataset(samples=samples, batch_size=batch_size, short_math=short_math, valid_ops=valid_ops,
+                                        name="training-data",cache_file=cache_file_stub+"_train", use_cache=use_cache, regenerate_cached_data=regenerate_cached_data)
+        val = self.create_dataset(samples=validation_samples, batch_size=batch_size, short_math=short_math, valid_ops=valid_ops,
+                                    name="validation-data",cache_file=cache_file_stub+"_val", use_cache=use_cache, regenerate_cached_data=regenerate_cached_data)
+        return train, val
+
     @staticmethod
     def decode_results(result_int_vects):
         """ take an array of 32-float results from neural net and convert to ints """
@@ -538,23 +548,6 @@ class ALU_Dataset():
             print(f"Weights: {self.model_dis}")
 
 
-# In[ ]:
-
-
-def get_datasets(pre_weight=True, samples=100000, validation_samples=10000, batch_size=2000, short_math=False, valid_ops=None, cache_file_stub='cache', use_cache=True, regenerate_cached_data=False):
-    math_data = ALU_Dataset(pre_weight=pre_weight)
-    train = math_data.create_dataset(samples=samples, batch_size=batch_size, short_math=short_math, valid_ops=valid_ops,
-                                     name="training-data",cache_file=cache_file_stub+"_train", use_cache=use_cache, regenerate_cached_data=regenerate_cached_data)
-    val = math_data.create_dataset(samples=validation_samples, batch_size=batch_size, short_math=short_math, valid_ops=valid_ops,
-                                   name="validation-data",cache_file=cache_file_stub+"_val", use_cache=use_cache, regenerate_cached_data=regenerate_cached_data)
-    return math_data, train, val
-
-
-# ## Different models
-
-# In[ ]:
-
-
 def model_large(inputs, regu1=1e-7, regu2=1e-7, regu3=1e-7, neurons=1024, filters=16, strides=2, kernel_size=3):  # neurons must be divisible by 4 for the residual below
     # Input goes parallel into 3 streams which will be combined at the end:
     # Stream 1: convolutions
@@ -616,15 +609,7 @@ def model_large(inputs, regu1=1e-7, regu2=1e-7, regu3=1e-7, neurons=1024, filter
     outputs = de2(xc1)
     return outputs
 
-
-# In[ ]:
-
-
 def model_medium(inputs, regu1=1e-7, regu2=1e-7, neurons=256, lstm_neurons=128, filters=64, kernel_size=3, strides=2):
-    #df1 = layers.Dense(neurons, kernel_regularizer=regularizers.l2(
-    #    regu1), activation="relu")
-    #xf1 = df1(inputs)
-
     shaper = layers.Reshape(target_shape=(36, 1,), input_shape=(36,))
     rinp = shaper(inputs) # xf1)
     d1 = layers.Conv1D(filters=filters, kernel_size=kernel_size, strides=strides, padding='same', kernel_regularizer=regularizers.l2(
@@ -660,10 +645,6 @@ def model_medium(inputs, regu1=1e-7, regu2=1e-7, neurons=256, lstm_neurons=128, 
     outputs = de2(xe1)
     return outputs
 
-
-# In[ ]:
-
-
 def model_minimal(inputs, neurons=64, regu1=1e-7):
     df1 = layers.Dense(neurons, kernel_regularizer=regularizers.l2(
         regu1), activation="relu")
@@ -678,10 +659,6 @@ def model_minimal(inputs, neurons=64, regu1=1e-7):
     de2 = layers.Dense(32, activation="sigmoid")
     outputs = de2(xf3)
     return outputs
-
-
-# In[ ]:
-
 
 def model_minimal_recurrent(inputs, neurons=64, lstm_neurons=128, regu1=1e-7):
     shaper = layers.Reshape(target_shape=(36, 1,), input_shape=(36,))
@@ -703,10 +680,6 @@ def model_minimal_recurrent(inputs, neurons=64, lstm_neurons=128, regu1=1e-7):
     de2 = layers.Dense(32, activation="sigmoid")
     outputs = de2(xe1)
     return outputs
-
-
-# In[ ]:
-
 
 def model_conv1d_recurrent(inputs, neurons=512, lstm_neurons=386, filters=128, kernel_size=3, strides=2, regu0=1e-7, regu1=1e-7, regu2=1e-7):
     shaper = layers.Reshape(target_shape=(36, 1,), input_shape=(36,))
@@ -748,54 +721,42 @@ def model_conv1d_recurrent(inputs, neurons=512, lstm_neurons=386, filters=128, k
     outputs = de2(xe1)
     return outputs
 
-
-# In[ ]:
-
-
-model_dict = {"large": model_large,
-              "medium": model_medium,
-              "minimal": model_minimal,
-              "minimal_recurrent": model_minimal_recurrent,
-              "conv_recurrent": model_conv1d_recurrent
-              }
-
-def create_load_model(save_path=None, model_type='large'):
+def create_load_model(save_path=None, model_variant=None):
     """ Create or load a model """
     if save_path is None or not os.path.exists(save_path): #or is_tpu is True:
         print("Initializing new model...")
         inputs = keras.Input(shape=(36,))  # depends on encoding of op-code!
-        if model_type not in model_dict:
+        if model_variant not in model_variants:
             print('Unkown model type')
             return None
-        outputs = model_dict[model_type](inputs)
-        model = keras.Model(inputs=inputs, outputs=outputs, name="maths_"+model_type)
-        print(f"Compiling new model of type {model_type}")
-        if use_keras_project is False: 
+        outputs = model_variants[model_variant](inputs)
+        model = keras.Model(inputs=inputs, outputs=outputs, name="maths_"+model_variant)
+        print(f"Compiling new model of type {model_variant}")
+        if use_keras_project_versions is False: 
             opti = keras.optimizers.Adam(learning_rate=0.001)
         else:
             opti = optimizers.Adam(learning_rate=0.001)
         model.compile(loss="mean_squared_error", optimizer=opti, metrics=[metrics.MeanSquaredError(), 'accuracy'])
     else:
-        print(f"Loading standard-format model of type {model_type} from {model_file}")
+        print(f"Loading standard-format model of type {model_variant} from {model_file}")
         model = tf.keras.models.load_model(model_file)
         print("Continuing training from existing model")
     model.summary()
     return model
 
-def get_model(save_path=None, on_tpu=False, model_type='large', import_weights=False):
-    if is_tpu is True and on_tpu is True:
-        tpu_is_init=False
-        if tpu_is_init is False:
-            cluster_resolver = tf.distribute.cluster_resolver.TPUClusterResolver(tpu=TPU_ADDRESS)
+def get_model(ml_env, save_path=None, on_tpu=False, model_variant=None, import_weights=False):
+    if on_tpu is True:
+        if ml_env.tpu_is_init is False:
+            cluster_resolver = tf.distribute.cluster_resolver.TPUClusterResolver(tpu=ml_env.tpu_address)
             tf.tpu.experimental.initialize_tpu_system(cluster_resolver)
             tpu_strategy = tf.distribute.TPUStrategy(cluster_resolver)    
-            tpu_is_init=True
+            ml_env.tpu_is_init=True
         with tpu_strategy.scope():
             print("Creating TPU-scope model")
-            model=create_load_model(save_path=None, model_type=model_type)
+            model=create_load_model(save_path=None, model_variant=model_variant)
         if weights_file is not None and os.path.exists(weights_file):
             print("Injecting saved weights into TPU model, loading...")
-            temp_model = create_load_model(save_path=None, model_type=model_type)
+            temp_model = create_load_model(save_path=None, model_variant=model_variant)
             temp_model.load_weights(weights_file)
             print("Injecting...")
             model.set_weights(temp_model.get_weights())
@@ -803,7 +764,7 @@ def get_model(save_path=None, on_tpu=False, model_type='large', import_weights=F
         return model
     else:
         print("Creating standard-scope model")
-        model = create_load_model(save_path=save_path, model_type=model_type)
+        model = create_load_model(save_path=save_path, model_variant=model_variant)
         if import_weights is True and weights_file is not None and os.path.exists(weights_file):
             print("Injecting saved weights into model, loading...")        
             model.load_weights(weights_file)
@@ -813,30 +774,17 @@ def get_model(save_path=None, on_tpu=False, model_type='large', import_weights=F
         return model
 
 
-# In[ ]:
-
-
-# This is seriously risky code!
 flush_timer = 0
-flush_timeout = 180   # don't set this too low, otherwise your local gdrive won't ever sync!
+flush_timeout = 180
 def gdrive_flusher(epoch, logs):
     return
 #    global flush_timer
 #    global flush_timeout
-#    print("GD-01")
 #    if uses_gdrive is True and use_force_flush is True:
-#        print("GD-02")
 #        if time.time() - flush_timer > flush_timeout:
-#            print(f"gd-flush: {epoch} {logs}")
-#            flush_timer=time.time()
-#            drive.flush_and_unmount()
-#            mount_gdrive()
 
 
-# In[ ]:
-
-
-def math_train(model, dataset, validation, batch_size=8192, epochs=5000, steps_per_epoch=2000, log_path="./logs"):
+def math_train(mlenv:MLEnv, model, dataset, validation, batch_size=8192, epochs=5000, steps_per_epoch=2000, log_path="./logs"):
     """ Training loop """
     interrupted = 2
     tensorboard_callback = callbacks.TensorBoard(
@@ -850,7 +798,7 @@ def math_train(model, dataset, validation, batch_size=8192, epochs=5000, steps_p
         on_epoch_end = gdrive_flusher
     )
     try:
-        if is_tpu:
+        if ml_env.is_tpu:
             model.fit(dataset, validation_data=validation, epochs=epochs, steps_per_epoch=steps_per_epoch, verbose=1, callbacks=[tensorboard_callback, lambda_callback])
             interrupted=0
         else:
@@ -870,25 +818,17 @@ def math_train(model, dataset, validation, batch_size=8192, epochs=5000, steps_p
     finally:
         return interrupted
 
-
-# In[ ]:
-
-
-def instantiate_models(model_file, model_type, import_weights=True):
-    if is_tpu:
+def instantiate_models(ml_env:MLEnv, model_file, model_variant, import_weights=True):
+    if ml_env.is_tpu:
         # Generate a second CPU model for testing:
-        test_model = get_model(save_path=None, on_tpu=False, model_type=model_type)
-        math_model = get_model(save_path=model_file, on_tpu=True, model_type=model_type)
+        test_model = get_model(ml_env, save_path=None, on_tpu=False, model_variant=model_variant)
+        math_model = get_model(ml_env, save_path=model_file, on_tpu=True, model_variant=model_variant)
     else:
         test_model = None
-        math_model = get_model(save_path=model_file, on_tpu=False, model_type=model_type, import_weights=import_weights)
+        math_model = get_model(ml_env, save_path=model_file, on_tpu=False, model_variant=model_variant, import_weights=import_weights)
     return math_model, test_model
 
-
-# In[ ]:
-
-
-def do_training(math_model, training_dataset, validation_dataset, math_data, epochs_per_cycle, model_file=None, 
+def do_training(mlenv:MLEnv, math_model, training_dataset, validation_dataset, math_data, epochs_per_cycle, model_file=None, 
                 weights_file=None, test_model=None, cycles=100, steps_per_epoch=1000, reweight_size=1000, valid_ops=None, regenerate_data_after_cycles=0, data_func=None,
                 log_path='./logs'):
     # Training
@@ -900,11 +840,11 @@ def do_training(math_model, training_dataset, validation_dataset, math_data, epo
         if regenerate_data_after_cycles!=0 and data_func is not None:
             if mep>0 and (mep+1)%regenerate_data_after_cycles==0:
                 math_data, training_dataset, validation_dataset = data_func()
-        if mep==0 and is_tpu is True:
+        if mep==0 and ml_env.is_tpu is True:
             print("There will be some warnings by Tensorflow, documenting some state of internal decoherence, currently they can be ignored.")
-        interrupted = math_train(math_model, training_dataset, validation=validation_dataset, epochs=epochs_per_cycle, steps_per_epoch=steps_per_epoch, log_path=log_path)
+        interrupted = math_train(ml_env, math_model, training_dataset, validation=validation_dataset, epochs=epochs_per_cycle, steps_per_epoch=steps_per_epoch, log_path=log_path)
         if interrupted <2:
-            if is_tpu:
+            if ml_env.is_tpu:
                 if test_model is None:
                     print("Fatal: tpu-mode needs test_model on CPU")
                     return False
@@ -927,12 +867,14 @@ def do_training(math_model, training_dataset, validation_dataset, math_data, epo
             break
 
 
-# ## The actual training
+model_variants = {"large": model_large,
+                  "medium": model_medium,
+                  "minimal": model_minimal,
+                  "minimal_recurrent": model_minimal_recurrent,
+                  "conv_recurrent": model_conv1d_recurrent
+            }
 
-# In[ ]:
-
-
-model_type='conv_recurrent'  # see: model_dict definition.
+model_variant='minimal'  # see: model_variants definition.
 epochs_per_cycle=250
 cycles = 100  # perform 100 cycles, each cycle trains with epochs_per_cycle epochs.
 regenerate_data_after_cycles=2  # if !=0, the training data will be created anew after each number of 
@@ -943,116 +885,24 @@ samples=2000000  # Number training data examples
 batch_size=20000 
 valid_ops=None  # Default: None (all ops), or list of ops, e.g. ['*', '/'] trains only multiplication and division.
 steps_per_epoch=samples//batch_size  # TPU stuff
-model_file, weights_file, cache_stub, log_path = init_paths(model_type=model_type, log_to_gdrive=True)
 
-def train_data(regen=True):
-    return get_datasets(pre_weight=True, samples=samples, validation_samples=50000, batch_size=batch_size, short_math=False, 
-                                     valid_ops=valid_ops, cache_file_stub=cache_stub, use_cache=True, regenerate_cached_data=regen)
-math_data, train, val = train_data(regen=False)
-math_model, test_model = instantiate_models(model_file, model_type, import_weights=True)
+ml_env=MLEnv()
+math_data=ALU_Dataset(ml_env)
 
+model_file, weights_file, cache_stub, log_path = ml_env.init_paths(model_variant=model_variant, log_to_gdrive=True)
 
-# In[ ]:
-
-
-# use the python variable log_path:
-get_ipython().run_line_magic('tensorboard', '--logdir "{log_path}"')
+train, val = math_data.get_datasets(pre_weight=True, samples=samples, validation_samples=50000, batch_size=batch_size, short_math=False, 
+                                     valid_ops=valid_ops, cache_file_stub=cache_stub, use_cache=True, regenerate_cached_data=False)
+math_model, test_model = instantiate_models(ml_env, model_file, model_variant, import_weights=True)
 
 
-# In[ ]:
+try:
+    # use the python variable log_path:
+    get_ipython().run_line_magic('tensorboard', '--logdir "{log_path}"')
+except:
+    pass
 
-
-do_training(math_model, train, val, math_data, epochs_per_cycle, model_file=model_file, 
+do_training(ml_env, math_model, train, val, math_data, epochs_per_cycle, model_file=model_file, 
             weights_file=weights_file, test_model=test_model, cycles=cycles, steps_per_epoch=steps_per_epoch, valid_ops=valid_ops, 
-            regenerate_data_after_cycles=regenerate_data_after_cycles, data_func=train_data, log_path=log_path)
-
-
-# # Testing and applying the trained model
-
-# In[ ]:
-
-
-if is_tpu is False:
-    test_model = math_model
-math_data.check_results(test_model, samples=1000, short_math=False, verbose=True)
-
-
-# In[ ]:
-
-
-dx,dy,_,_,_=math_data.create_data_point(22,33,'+')
-
-
-# In[ ]:
-
-
-math_data.decode_results(test_model.predict(np.array([dx])))
-
-
-# In[ ]:
-
-
-def calc(inp):
-    args=inp.split(' ')
-    if len(args)!=3:
-        print("need three space separated tokens: <int> <operator> <int>, e.g. '3 + 4' or '4 XOR 5'")
-        return False
-    if args[1] not in math_data.model_ops:
-        print(f"{args[1]} is not a known operator.")
-        return False
-    op1=int(args[0])
-    op2=int(args[2])
-    dx,dy,_,_,_=math_data.create_data_point(op1, op2, args[1])
-    ans=math_data.decode_results(test_model.predict(np.array([dx])))
-    print(f"{op1} {args[1]} {op2} = {ans[0]}")
-    op=f"{op1} {args[1]} {op2}"
-    op=op.replace('AND', '&').replace('XOR','^').replace('=','==').replace('OR','|')
-    an2=eval(op)
-    if ans[0]!=an2:
-        print("Error")
-        print(bin(ans[0]))
-        print(bin(an2))
-    return ans[0],an2
-
-
-# In[ ]:
-
-
-calc("222 = 223")
-
-
-# In[ ]:
-
-
-eval("2333+1120")
-
-
-# In[ ]:
-
-
-calc("8812 = 8812")
-
-
-# In[ ]:
-
-
-999/27
-
-
-# In[ ]:
-
-
-calc("3 * 4")
-
-
-# In[ ]:
-
-
-calc ("1 AND 3")
-
-
-# In[ ]:
-
-
-
+            regenerate_data_after_cycles=regenerate_data_after_cycles, data_func=None, log_path=log_path)
 
