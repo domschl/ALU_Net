@@ -43,6 +43,23 @@ class MLEnv():
         self.is_gpu = False
         self.tpu_address = None
 
+        if self.is_colab:
+            if self.tpu_address is None:
+                try:
+                    self.tpu_address = 'grpc://' + os.environ['COLAB_TPU_ADDR']
+                    tf.config.experimental_connect_to_host(self.tpu_address)
+                    if verbose is True:
+                        print(f"TPU available at {self.tpu_address}")
+                    self.is_tpu = True
+                except Exception as e:
+                    if verbose is True:
+                        print("No TPU available: {e}")
+                    self.is_tpu = False
+            else:
+                if verbose is True:
+                    print(f"TPU available, already connected to {self.tpu_address}")
+                self.is_tpu = True
+
         for hw in ["CPU", "GPU", "TPU"]:
             hw_list=tf.config.experimental.list_physical_devices(hw)
             if len(hw_list)>0:
@@ -52,22 +69,6 @@ class MLEnv():
                     self.is_gpu=True
                 if verbose is True:
                     print(f"{hw}: {hw_list} {tf.config.experimental.get_device_details(hw_list[0])}") 
-
-        if self.is_colab:
-            if self.is_tpu is True:
-                if self.tpu_address is None:
-                    try:
-                        self.tpu_address = 'grpc://' + os.environ['COLAB_TPU_ADDR']
-                        tf.config.experimental_connect_to_host(self.tpu_address)
-                        if verbose is True:
-                            print(f"TPU available at {self.tpu_address}")
-                    except Exception as e:
-                        if verbose is True:
-                            print("No TPU available: {e}")
-                        self.is_tpu = False
-                else:
-                    if verbose is True:
-                        print(f"TPU available, already connected to {self.tpu_address}")
 
         if not self.is_tpu:
             if not self.is_gpu:
