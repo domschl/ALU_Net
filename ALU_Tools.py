@@ -44,6 +44,7 @@ class MLEnv():
         self.tpu_address = None
 
         if self.is_colab:
+            print("Checking for TPU...")
             try:
                 tpu = tf.distribute.cluster_resolver.TPUClusterResolver()  # TPU detection
                 if verbose is True:
