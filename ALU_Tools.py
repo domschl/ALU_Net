@@ -137,7 +137,9 @@ class MLEnv():
             if self.log_mirror_path is not None:
                 if len(self.log_mirror_path)>4 and self.log_mirror_path[-5:]=='/logs':
                     if os.path.exists(self.log_mirror_path) is True:
+                        print(f"Removing old log files from {self.log_mirror_path}")
                         shutil.rmtree(self.log_mirror_path)
+                    print(f"Staring tree-copy of files from {self.log_mirror_path}. [This can be astonishingly slow!]")
                     shutil.copytree(self.log_path, self.log_mirror_path)
                     print(f"Tensorboard data mirrored to {self.log_mirror_path}")
                 else:
