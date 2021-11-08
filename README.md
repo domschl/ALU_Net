@@ -92,7 +92,7 @@ If you have Google Drive sync for the directory `My Drive/Colab Notebooks/ALU_Ne
 tensorboard --logdir /Volumes/GoogleDrive/My\ Drive/Colab\ Notebooks/ALU_Net/logs
 ```
 
-Note: This option is now disabled by default (`MLEnv.init_paths(og_to_gdrive=False)`), because Google copy performance between colab and drive is catastrophicaly slow.
+Note: This option is now disabled by default (`MLEnv.init_paths(log_to_gdrive=False)`), because Google copy performance between colab and drive is catastrophicaly slow.
 
 ### TPU Notes
 
