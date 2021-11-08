@@ -92,6 +92,8 @@ If you have Google Drive sync for the directory `My Drive/Colab Notebooks/ALU_Ne
 tensorboard --logdir /Volumes/GoogleDrive/My\ Drive/Colab\ Notebooks/ALU_Net/logs
 ```
 
+Note: This option is now disabled by default (`MLEnv.init_paths(og_to_gdrive=False)`), because Google copy performance between colab and drive is catastrophicaly slow.
+
 ### TPU Notes
 
 - *Saving state*: Saving TPU with Colab notebooks is a challenge. Saving complete models (via `keras.Model.save`)is not supported just with Colab & TPU. It is possible to export the weights (`keras.Model.get_weights`), import them into a model in CPU-scope and save there: `cpu_model.set_weights(tpu_model.get_weights()); cpu_model.save_weights(weights_filename)`. So far I couldn't figure out a similar method for preserving optimizer state.
