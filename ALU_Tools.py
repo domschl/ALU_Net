@@ -445,9 +445,11 @@ class ALU_Dataset():
         if is_loaded is False:
             x, Y = self.create_training_data(samples=samples, short_math=short_math, valid_ops=valid_ops, title=name)
             if use_cache is True:
-                print(f"Writing data-cache {cache_file_x}, {cache_file_Y}...")
+                print(f"Writing data-cache {cache_file_x}, {cache_file_Y}...", end="")
                 np.save(cache_file_x, x, allow_pickle=True)
+                print(", x", end="")
                 np.save(cache_file_Y, Y, allow_pickle=True)
+                print(", Y, done.")
         shuffle_buffer=10000
         dataset=tf.data.Dataset.from_tensor_slices((x, Y)).cache()
         dataset=dataset.shuffle(shuffle_buffer, reshuffle_each_iteration=True)
