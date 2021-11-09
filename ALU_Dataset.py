@@ -7,6 +7,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
+from ml_env_tools import MLEnv
+
 # ## Training data
 class ALU_Dataset():
     """ Generate training data for all ALU operations """
