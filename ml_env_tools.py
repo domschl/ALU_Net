@@ -56,7 +56,7 @@ class MLEnv():
 
             except ValueError:
                 if verbose is True:
-                    print("No TPU available: {e}")
+                    print(f"No TPU available: {e}")
                 self.is_tpu = False
 
         for hw in ["CPU", "GPU", "TPU"]:
