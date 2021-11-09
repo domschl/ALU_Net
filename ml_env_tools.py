@@ -5,6 +5,11 @@ import shutil
 import tensorflow as tf
 
 try:
+    from tensorflow.python.profiler import profiler_client
+except:
+    pass
+
+try:
     from google.colab import drive
 except:
     pass
@@ -44,6 +49,11 @@ class MLEnv():
                 if verbose is True:
                     print('Running on TPU ', tpu.cluster_spec().as_dict()['worker'])
                 self.is_tpu = True
+                tpu_profile_service_address = os.environ['COLAB_TPU_ADDR'].replace('8470', '8466')
+                state=profiler_client.monitor(tpu_profile_service_address, 100, 2)
+                if 'TPU v2' in state:
+                    print("WARNING: you got old TPU v2 which is limited to 8GB Ram.")
+
             except ValueError:
                 if verbose is True:
                     print("No TPU available: {e}")
