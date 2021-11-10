@@ -102,7 +102,7 @@ class MLEnv():
 
     def init_paths(self, project_name, model_name, model_variant=None, log_to_gdrive=False):
         self.save_model = True
-        self.model_save_dir=None
+        self.model_path=None
         self.cache_path=None
         self.weights_file = None
         self.project_path = None
@@ -114,6 +114,7 @@ class MLEnv():
         else:
             self.root_path='.'
 
+        print(f"Root path: {self.root_path}")
         if self.save_model:
             if self.is_colab:
                 self.project_path=os.path.join(self.root_path,f"Colab Notebooks/{project_name}")
@@ -123,20 +124,20 @@ class MLEnv():
             else:
                 self.project_path=self.root_path
             if model_variant is None:
-                self.model_save_dir=os.path.join(self.project_path,f"{model_name}")
+                self.model_path=os.path.join(self.project_path,f"{model_name}")
                 self.weights_file=os.path.join(self.project_path,f"{model_name}_weights.h5")
             else:
-                self.model_save_dir=os.path.join(self.project_path,f"{model_name}_{model_variant}")
+                self.model_path=os.path.join(self.project_path,f"{model_name}_{model_variant}")
                 self.weights_file=os.path.join(self.project_path,f"{model_name}_{model_variant}_weights.h5")
             self.cache_path=os.path.join(self.project_path,'data')
             if not os.path.exists(self.cache_path):
                 os.makedirs(self.cache_path)
             if self.is_tpu is False:
-                print(f"Model save-path: {self.model_save_dir}")
+                print(f"Model save-path: {self.model_path}")
             else:
                 print(f"Weights save-path: {self.weights_file}")
             print(f'Data cache path {self.cache_path}')
-        return self.model_save_dir, self.weights_file, self.cache_path, self.log_path
+        return self.root_path, self.model_path, self.weights_file, self.cache_path, self.log_path
 
     def gdrive_log_mirror(self):
         # copy directory self.log_path to self.log_mirror_path

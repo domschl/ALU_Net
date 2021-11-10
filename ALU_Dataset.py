@@ -266,7 +266,7 @@ class ALU_Dataset():
     def create_dataset(self, samples=10000, batch_size=2000, short_math=False, valid_ops=None, name=None, cache_path=None, use_cache=True, regenerate_cached_data=False):
         is_loaded=False
         if use_cache is True and cache_path is None:
-            print("can't use cache if no cache_path is given!")
+            print("can't use cache if no cache_path is given, disabling cache!")
             use_cache = False
         if use_cache is True:
             if valid_ops is not None:
