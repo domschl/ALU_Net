@@ -23,7 +23,7 @@ class MLTuner():
             self.search_space["best_params"]={}
         for key in param_space:
             if key not in self.search_space["best_params"]:
-                self.search_space["best_params"][key]=self.search_space["params"][key][0]
+                self.search_space["best_params"][key]=param_space[key][0]
         p_cnt=0
         for key in param_space:
             params=copy.deepcopy(self.search_space["best_params"])
