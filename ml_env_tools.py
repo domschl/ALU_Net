@@ -103,7 +103,7 @@ class MLEnv():
     def init_paths(self, project_name, model_name, model_variant=None, log_to_gdrive=False):
         self.save_model = True
         self.model_save_dir=None
-        self.cache_stub=None
+        self.cache_path=None
         self.weights_file = None
         self.project_path = None
         self.log_path = "./logs"
@@ -128,13 +128,15 @@ class MLEnv():
             else:
                 self.model_save_dir=os.path.join(self.project_path,f"{model_name}_{model_variant}")
                 self.weights_file=os.path.join(self.project_path,f"{model_name}_{model_variant}_weights.h5")
-            self.cache_stub=os.path.join(self.project_path,'data_cache')
+            self.cache_path=os.path.join(self.project_path,'data')
+            if not os.path.exists(self.cache_path):
+                os.makedirs(self.cache_path)
             if self.is_tpu is False:
                 print(f"Model save-path: {self.model_save_dir}")
             else:
                 print(f"Weights save-path: {self.weights_file}")
-            print(f'Data cache file-stub {self.cache_stub}')
-        return self.model_save_dir, self.weights_file, self.cache_stub, self.log_path
+            print(f'Data cache path {self.cache_path}')
+        return self.model_save_dir, self.weights_file, self.cache_path, self.log_path
 
     def gdrive_log_mirror(self):
         # copy directory self.log_path to self.log_mirror_path
