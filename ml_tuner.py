@@ -13,6 +13,7 @@ class MLTuner():
                 print(f"Initialized search_space from {self.search_space_file}")
                 is_new = False
         if is_new is True:
+            self.search_space = {}
             self.search_space["best_ev"] = 0
             self.search_space["is_first"] = True
             self.search_space["progress"] = 0
