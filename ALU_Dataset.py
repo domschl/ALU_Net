@@ -286,8 +286,8 @@ class ALU_Dataset():
                     infix+=vo
             else:
                 infix=""
-            cache_file_x=os.path.join(cache_path, f"{infix}_{samples}_x.npy")
-            cache_file_Y=os.path.join(cache_path, f"{infix}_{samples}_Y.npy")
+            cache_file_x=os.path.join(cache_path, f"{name}_{infix}_{samples}_x.npy")
+            cache_file_Y=os.path.join(cache_path, f"{name}_{infix}_{samples}_Y.npy")
         if use_cache is True  and regenerate_cached_data is False and os.path.exists(cache_file_x) and os.path.exists(cache_file_Y):
             try:
                 x = np.load(cache_file_x, allow_pickle=True)
@@ -325,11 +325,11 @@ class ALU_Dataset():
             )
         return dataset
 
-    def get_datasets(self, pre_weight=True, samples=100000, validation_samples=10000, batch_size=2000, short_math=False, valid_ops=None, cache_file_stub='cache', use_cache=True, regenerate_cached_data=False):
+    def get_datasets(self, pre_weight=True, samples=100000, validation_samples=10000, batch_size=2000, short_math=False, valid_ops=None, cache_path='cache', use_cache=True, regenerate_cached_data=False):
         train = self.create_dataset(samples=samples, batch_size=batch_size, short_math=short_math, valid_ops=valid_ops,
-                                        name="training-data",cache_file=cache_file_stub+"_train", use_cache=use_cache, regenerate_cached_data=regenerate_cached_data)
+                                        name="train",cache_file=cache_path, use_cache=use_cache, regenerate_cached_data=regenerate_cached_data)
         val = self.create_dataset(samples=validation_samples, batch_size=batch_size, short_math=short_math, valid_ops=valid_ops,
-                                    name="validation-data",cache_file=cache_file_stub+"_val", use_cache=use_cache, regenerate_cached_data=regenerate_cached_data)
+                                    name="validation",cache_file=cache_path, use_cache=use_cache, regenerate_cached_data=regenerate_cached_data)
         return train, val
 
     @staticmethod
