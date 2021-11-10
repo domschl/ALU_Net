@@ -43,7 +43,7 @@ class MLTuner():
                 self.search_space["progress"] += 1
                 params[key]=val
                 print(f"#### Testing: {key}={val} with {params}:")
-                interrupted, ev = eval_func(params)
+                ev = eval_func(params)
                 print(f"] Eval: {ev}")
                 if ev > self.search_space["best_ev"]:
                     self.search_space["best_ev"] = ev
@@ -53,8 +53,6 @@ class MLTuner():
                     print("*********************************************************")
                     with open(self.search_space_file, "w") as f:
                         json.dump(self.search_space, f, indent=4)
-                if interrupted>0:
-                    return self.search_space["best_params"]
         print(f"Best parameter set with {self.search_space['best_ev']} val_loss: {self.search_space['best_params']}")
         return self.search_space["best_params"]
         
