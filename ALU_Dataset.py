@@ -263,7 +263,7 @@ class ALU_Dataset():
             print()
         return dpx, dpy
 
-    def create_dataset(self, samples=10000, batch_size=2000, short_math=False, valid_ops=None, name=None, cache_file=None, use_cache=True, regenerate_cached_data=False):
+    def create_dataset(self, samples=10000, batch_size=2000, short_math=False, valid_ops=None, name=None, cache_path=None, use_cache=True, regenerate_cached_data=False):
         is_loaded=False
         if use_cache is True:
             if valid_ops is not None:
@@ -286,8 +286,8 @@ class ALU_Dataset():
                     infix+=vo
             else:
                 infix=""
-            cache_file_x=cache_file+infix+'_x.npy'
-            cache_file_Y=cache_file+infix+"_Y.npy"
+            cache_file_x=os.path.join(cache_path, f"{infix}_{samples}_x.npy")
+            cache_file_Y=os.path.join(cache_path, f"{infix}_{samples}_Y.npy")
         if use_cache is True  and regenerate_cached_data is False and os.path.exists(cache_file_x) and os.path.exists(cache_file_Y):
             try:
                 x = np.load(cache_file_x, allow_pickle=True)
