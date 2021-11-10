@@ -53,6 +53,6 @@ class MLTuner():
                     print("*********************************************************")
                     with open(self.search_space_file, "w") as f:
                         json.dump(self.search_space, f, indent=4)
-        print(f"Best parameter set with {self.search_space['best_ev']} val_loss: {self.search_space['best_params']}")
+        print(f"Best parameter set with {self.search_space['best_ev']} eval: {self.search_space['best_params']}")
         return self.search_space["best_params"]
         
