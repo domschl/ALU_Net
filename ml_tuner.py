@@ -5,7 +5,7 @@ from ml_env_tools import MLEnv
 
 class MLTuner():
     def __init__(self, ml_env:MLEnv, model_variant, load_progress=False):
-        self.search_space_file = os.path.join(ml_env.root_path, f"params_search_space_{model_variant}.json")
+        self.search_space_file = os.path.join(ml_env.project_path, f"params_search_space_{model_variant}.json")
         is_new = True
         if os.path.exists(self.search_space_file) is True and load_progress is True:
             with open(self.search_space_file,'r') as f:

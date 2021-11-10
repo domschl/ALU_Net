@@ -137,7 +137,7 @@ class MLEnv():
             else:
                 print(f"Weights save-path: {self.weights_file}")
             print(f'Data cache path {self.cache_path}')
-        return self.root_path, self.model_path, self.weights_file, self.cache_path, self.log_path
+        return self.root_path, self.project_path, self.model_path, self.weights_file, self.cache_path, self.log_path
 
     def gdrive_log_mirror(self):
         # copy directory self.log_path to self.log_mirror_path
