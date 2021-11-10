@@ -4,10 +4,10 @@ import json
 from ml_env_tools import MLEnv
 
 class MLTuner():
-    def __init__(self, ml_env:MLEnv, model_variant):
+    def __init__(self, ml_env:MLEnv, model_variant, load_progress=False):
         self.search_space_file = os.path.join(ml_env.root_path, f"params_search_space_{model_variant}.json")
         is_new = True
-        if os.path.exists(self.search_space_file) is True:
+        if os.path.exists(self.search_space_file) is True and load_progress is True:
             with open(self.search_space_file,'r') as f:
                 self.search_space = json.load(f)
                 print(f"Initialized search_space from {self.search_space_file}")
@@ -15,6 +15,7 @@ class MLTuner():
         if is_new is True:
             self.search_space["best_ev"] = 0
             self.search_space["is_first"] = True
+            self.search_space["progress"] = 0
 
     def tune(self, param_space, eval_func):
         for key in param_space:
