@@ -19,6 +19,8 @@ class MLTuner():
             self.search_space["progress"] = 0
 
     def tune(self, param_space, eval_func):
+        if "best_params" not in self.search_space:
+            self.search_space["best_params"]={}
         for key in param_space:
             if key not in self.search_space["best_params"]:
                 self.search_space["best_params"][key]=self.search_space["params"][key][0]
