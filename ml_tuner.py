@@ -49,7 +49,7 @@ class MLTuner():
                     self.search_space["best_ev"] = ev
                     self.search_space["best_params"] = copy.deepcopy(params)
                     print("*********************************************************")
-                    print(f"Best parameter set with ev={ev}: {params}")
+                    print(f"Best parameter set with ev={ev}: {params} -> {self.search_space_file}")
                     print("*********************************************************")
                     with open(self.search_space_file, "w") as f:
                         json.dump(self.search_space, f, indent=4)
