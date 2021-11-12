@@ -23,15 +23,15 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.49497475"
-     inkscape:cx="578.80037"
-     inkscape:cy="69.272027"
+     inkscape:zoom="0.9899495"
+     inkscape:cx="264.94389"
+     inkscape:cy="164.69075"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
      showgrid="false"
-     inkscape:window-width="1252"
-     inkscape:window-height="968"
+     inkscape:window-width="1565"
+     inkscape:window-height="967"
      inkscape:window-x="37"
      inkscape:window-y="25"
      inkscape:window-maximized="0" />
@@ -51,6 +51,17 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="79.364441"
+       y="58.733875"
+       id="text100-8"><tspan
+         sodipodi:role="line"
+         id="tspan98-4"
+         x="79.364441"
+         y="58.733875"
+         style="stroke-width:0.264583">...</tspan></text>
     <circle
        style="fill:none;stroke:#e50000;stroke-width:0.404544"
        id="path10-7"
@@ -79,24 +90,6 @@
        style="fill:none;stroke:#e50000;stroke-width:0.404544"
        id="path10-7-0"
        cx="37.895588"
-       cy="58.523911"
-       r="1.5290787" />
-    <circle
-       style="fill:none;stroke:#e50000;stroke-width:0.404544"
-       id="path10-9-2"
-       cx="42.125839"
-       cy="58.523911"
-       r="1.5290787" />
-    <circle
-       style="fill:none;stroke:#e50000;stroke-width:0.404544"
-       id="path10-7-3-4"
-       cx="46.356091"
-       cy="58.523911"
-       r="1.5290787" />
-    <circle
-       style="fill:none;stroke:#e50000;stroke-width:0.404544"
-       id="path10-83"
-       cx="50.586342"
        cy="58.523911"
        r="1.5290787" />
     <circle
@@ -133,12 +126,6 @@
        style="fill:none;stroke:#e50000;stroke-width:0.404544"
        id="path10-9-2-7"
        cx="75.967842"
-       cy="58.523911"
-       r="1.5290787" />
-    <circle
-       style="fill:none;stroke:#e50000;stroke-width:0.404544"
-       id="path10-7-3-4-3"
-       cx="80.19809"
        cy="58.523911"
        r="1.5290787" />
     <circle
@@ -426,25 +413,25 @@
     <circle
        style="fill:none;stroke:#e50000;stroke-width:0.404544"
        id="path10-7-02-6"
-       cx="91.098709"
+       cx="94.802879"
        cy="58.537109"
        r="1.5290787" />
     <circle
        style="fill:none;stroke:#e50000;stroke-width:0.404544"
        id="path10-9-3-5"
-       cx="95.227219"
+       cx="98.931389"
        cy="58.537109"
        r="1.5290787" />
     <circle
        style="fill:none;stroke:#e50000;stroke-width:0.404544"
        id="path10-7-3-9-9"
-       cx="99.355713"
+       cx="103.05987"
        cy="58.537109"
        r="1.5290787" />
     <circle
        style="fill:none;stroke:#e50000;stroke-width:0.404544"
        id="path10-8-9-5"
-       cx="103.48422"
+       cx="107.18839"
        cy="58.537109"
        r="1.5290787" />
     <text
@@ -462,7 +449,7 @@
          x="18.708866"
          y="45.306885"
          style="font-size:6.35px;stroke-width:0.264583"
-         id="tspan428">(36 neurons, 2x16 bit integer 4bit operation))</tspan></text>
+         id="tspan428">(44 neurons, 2x16 bit integer 12bit operation))</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:6.35px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
@@ -484,7 +471,7 @@
          id="tspan430"
          x="18.708866"
          y="53.464645"
-         style="font-size:6.35px;stroke-width:0.264583">Integer 1 (16bit)     (Op 4bit) Integer 2 (16bit)  </tspan></text>
+         style="font-size:6.35px;stroke-width:0.264583">Integer 1 (16bit)   (Op 12bit) Integer 2 (16bit)  </tspan></text>
     <rect
        style="fill:none;stroke:#e50000;stroke-width:1"
        id="rect436"
@@ -548,5 +535,16 @@
        cx="112.14645"
        cy="58.637302"
        r="1.5290787" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="41.437515"
+       y="59.066566"
+       id="text100"><tspan
+         sodipodi:role="line"
+         id="tspan98"
+         x="41.437515"
+         y="59.066566"
+         style="stroke-width:0.264583">...</tspan></text>
   </g>
 </svg>
