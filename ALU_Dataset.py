@@ -18,9 +18,8 @@ class ALU_Dataset():
     # arbitrary op1, op2 (positive integers, 0..32767) and 
     # the twelve supported ops 
 
-    def __init__(self, ml_env:MLEnv, pre_weight=False, use_onehot_opcode=True):
+    def __init__(self, ml_env:MLEnv, pre_weight=False):
         self.ml_env=ml_env
-        self.use_onehot_opcode=use_onehot_opcode
         self.model_ops = ["+", "-", "*", "/", "%",
                           "AND", "OR", "XOR", ">", "<", "=", "!="]
         self.model_is_boolean = [False, False, False, False, False,
@@ -126,16 +125,10 @@ class ALU_Dataset():
         else:
             str_result=result
         sym = f"{op1} {self.model_ops[op_index]} {op2} = {str_result}"
-        if self.use_onehot_opcode:
-            inp = np.concatenate(
-                [self.int_to_binary_vect(op1, num_bits=16),
-                self.int_to_onehot_vect(op_index, num_bits=12),
-                self.int_to_binary_vect(op2, num_bits=16)])
-        else:
-            inp = np.concatenate(
-                [self.int_to_binary_vect(op1, num_bits=16),
-                self.int_to_binary_vect(op_index, num_bits=4),
-                self.int_to_binary_vect(op2, num_bits=16)])
+        inp = np.concatenate(
+            [self.int_to_binary_vect(op1, num_bits=16),
+            self.int_to_onehot_vect(op_index, num_bits=12),
+            self.int_to_binary_vect(op2, num_bits=16)])
 
         oup = self.int_to_binary_vect(result, num_bits=32)
         return inp, oup, result, op_index, sym
@@ -335,20 +328,12 @@ class ALU_Dataset():
         return dataset
 
     def create_dataset_from_generator(self, short_math=False, valid_ops=None):
-        if self.use_onehot_opcode:
-            dataset=tf.data.Dataset.from_generator(
-                self.generator,
-                output_signature=(
-                        tf.TensorSpec(shape=(None,44), dtype=np.float32),
-                        tf.TensorSpec(shape=(None,32), dtype=np.float32))
-                )
-        else:
-            dataset=tf.data.Dataset.from_generator(
-                self.generator,
-                output_signature=(
-                        tf.TensorSpec(shape=(None,36), dtype=np.float32),
-                        tf.TensorSpec(shape=(None,32), dtype=np.float32))
-                )
+        dataset=tf.data.Dataset.from_generator(
+            self.generator,
+            output_signature=(
+                    tf.TensorSpec(shape=(None,44), dtype=np.float32),
+                    tf.TensorSpec(shape=(None,32), dtype=np.float32))
+            )
         return dataset
 
     def get_datasets(self, pre_weight=True, samples=100000, validation_samples=10000, batch_size=2000, short_math=False, valid_ops=None, cache_path=None, use_cache=True, regenerate_cached_data=False):
