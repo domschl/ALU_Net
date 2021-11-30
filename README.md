@@ -84,6 +84,10 @@ Since (as far as I know) exporting the complete model for TPUs to local colab (o
 
 ## Unsorted notes
 
+### Notes on experiments
+
+- (2021-11-30) Most difficult operation for the net to learn is always `*`. All bitwise operations and comparisations are usually learned quickly with almost any architecture, followed by `+`, `-` and interestingly also `/` and even `%`. Why this experiment has currently so much more difficulties learning to multiply is currently unknown. Interestingly, if ALU operations are restricted to just `*` (by setting `valid_ops=['*']`), again almost all network architecture start to learn multiplication within a short timespan on TPU. Why this doesn't work in the same way with all operations enabled is currently unknown. 
+
 ### Colab and remote Tensorboard via Google Drive sync
 
 If you have Google Drive sync for the directory `My Drive/Colab Notebooks/ALU_Net/logs` activated on a remote desktop, a remote Tensorboard instance can display the training progress. You simply need to figure out the physical destination of the files Google Drive syncs. On a Mac that would be by default like this:
@@ -92,7 +96,7 @@ If you have Google Drive sync for the directory `My Drive/Colab Notebooks/ALU_Ne
 tensorboard --logdir /Volumes/GoogleDrive/My\ Drive/Colab\ Notebooks/ALU_Net/logs
 ```
 
-Note: This option is now disabled by default (`MLEnv.init_paths(log_to_gdrive=False)`), because Google copy performance between colab and drive is catastrophicaly slow.
+__Note:__ This option is now _disabled by default_ (`MLEnv.init_paths(log_to_gdrive=False)`), because Google copy performance between colab and drive is catastrophicaly slow.
 
 ### TPU Notes
 
