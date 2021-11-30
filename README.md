@@ -60,6 +60,27 @@ The most difficult operation for the net to learn seems to be multiplication.
 20433 % 17561 = 2872 == 2872: OK
 ```
 
+### Multiplication-only training
+
+Wenn training only operation multiplication `*` by setting `valid_ops=['*']`, some success after a few hours of training can be
+observed with 8-layer dense network with additive skip-connections and batchnorm between each layer:
+```
+27048 * 11369 = 307508712 != 307525096: Error
+0b10010010101000111010111101000
+0b10010010101000011010111101000
+21712 * 18504 = 401758848 == 401758848: OK
+10417 * 4038 = 42063846 == 42063846: OK
+13954 * 6841 = 95459314 != 95475698: Error
+0b101101100001101011111110010
+0b101101100001001011111110010
+20549 * 3625 = 74490125 == 74490125: OK
+22247 * 20715 = 460846605 != 527971853: Error
+0b11111011110000011011000001101
+0b11011011101111111011000001101
+
+OP*: Ok: 21, Error: 79 -> 21.0%
+```
+
 ## Different hardware platforms
 
 Currently support are
