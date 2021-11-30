@@ -413,4 +413,5 @@ class ALU_Dataset():
             print("Change probability for ops in new training data:")
             print(f"Ops:     {self.model_ops}")
             print(f"Weights: {self.model_dis}")
+        return ok/opsum
 
