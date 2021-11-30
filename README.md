@@ -86,7 +86,7 @@ Since (as far as I know) exporting the complete model for TPUs to local colab (o
 
 ### Notes on experiments
 
-- (2021-11-30) Most difficult operation for the net to learn is always `*`. All bitwise operations and comparisations are usually learned quickly with almost any architecture, followed by `+`, `-` and interestingly also `/` and even `%`. Why this experiment has currently so much more difficulties learning to multiply is currently unknown. Interestingly, if ALU operations are restricted to just `*` (by setting `valid_ops=['*']`), again almost all network architecture start to learn multiplication within a short timespan on TPU. Why this doesn't work in the same way with all operations enabled is currently unknown. 
+- (2021-11-30) Most difficult operation for the net to learn is always `*`. All bitwise operations and comparisations are usually learned quickly with almost any architecture, followed by `+`, `-` and interestingly also `/` and even `%`. Why this experiment has so much more difficulties in learning how to multiply is currently unknown. Interestingly, if ALU operations are restricted to just `*` (by setting `valid_ops=['*']`), again almost all network architectures start to learn multiplication within a short timespan at least to some degree. Why this doesn't work in the same way with all operations enabled is currently unknown. 
 
 ### Colab and remote Tensorboard via Google Drive sync
 
