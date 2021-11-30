@@ -399,16 +399,16 @@ class ALU_Dataset():
         print(f"Ok: {ok}, Error: {err} -> {ok/opsum*100.0}%")
         print("")
         for i in range(0, len(self.model_ops)):
-            opsum = opok[i]+operr[i]
-            if opsum == 0:
+            opsumi = opok[i]+operr[i]
+            if opsumi == 0:
                 continue
             # modify the distribution of training-data generated to favour
             # ops with bad test results, so that more training data is
             # generated on difficult cases:
-            self.model_dis[i] = int(operr[i]/opsum*100)+10
+            self.model_dis[i] = int(operr[i]/opsumi*100)+10
             print(
                 f"OP{self.model_ops[i]}: Ok: {opok[i]}, Error: {operr[i]}", end="")
-            print(f" -> {opok[i]/opsum*100.0}%")
+            print(f" -> {opok[i]/opsumi*100.0}%")
         if valid_ops == None:
             print("Change probability for ops in new training data:")
             print(f"Ops:     {self.model_ops}")
