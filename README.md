@@ -63,7 +63,7 @@ The most difficult operation for the net to learn seems to be multiplication.
 ### Multiplication-only training
 
 Wenn training only operation multiplication `*` by setting `valid_ops=['*']`, success after about 100 epochs can be
-observed with 12-layer dense network with additive residual-connections and batchnorm between each layer:
+observed with 12-layer dense network (1024 neurons) with additive residual-connections and batchnorm between each layer:
 ```
 27250 * 14588 = 397523000 == 397523000: OK
 10510 * 17232 = 181108320 == 181108320: OK
@@ -77,6 +77,7 @@ observed with 12-layer dense network with additive residual-connections and batc
 0b100010111110110001010101000000
 OP*: Ok: 82, Error: 18 -> 82.0%
 ```
+'Bitflips' in case of error simply became much less frequent after the network size reached a certain depth (12 layers, residual) and size (1024).
 
 ## Different hardware platforms
 
