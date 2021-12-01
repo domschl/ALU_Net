@@ -62,23 +62,20 @@ The most difficult operation for the net to learn seems to be multiplication.
 
 ### Multiplication-only training
 
-Wenn training only operation multiplication `*` by setting `valid_ops=['*']`, some success after a few hours of training can be
-observed with 8-layer dense network with additive skip-connections and batchnorm between each layer:
+Wenn training only operation multiplication `*` by setting `valid_ops=['*']`, success after about 100 epochs can be
+observed with 12-layer dense network with additive residual-connections and batchnorm between each layer:
 ```
-27048 * 11369 = 307508712 != 307525096: Error
-0b10010010101000111010111101000
-0b10010010101000011010111101000
-21712 * 18504 = 401758848 == 401758848: OK
-10417 * 4038 = 42063846 == 42063846: OK
-13954 * 6841 = 95459314 != 95475698: Error
-0b101101100001101011111110010
-0b101101100001001011111110010
-20549 * 3625 = 74490125 == 74490125: OK
-22247 * 20715 = 460846605 != 527971853: Error
-0b11111011110000011011000001101
-0b11011011101111111011000001101
-
-OP*: Ok: 21, Error: 79 -> 21.0%
+27250 * 14588 = 397523000 == 397523000: OK
+10510 * 17232 = 181108320 == 181108320: OK
+25989 * 8009 = 208145901 == 208145901: OK
+31096 * 8833 = 274670968 == 274670968: OK
+7540 * 31608 = 238324320 == 238324320: OK
+20906 * 11601 = 242530506 == 242530506: OK
+25014 * 14725 = 368331150 == 368331150: OK
+18460 * 31792 = 586880320 != 721098048: Error
+0b101010111110110001010101000000
+0b100010111110110001010101000000
+OP*: Ok: 82, Error: 18 -> 82.0%
 ```
 
 ## Different hardware platforms
@@ -107,6 +104,7 @@ Since (as far as I know) exporting the complete model for TPUs to local colab (o
 
 ### Notes on experiments
 
+- (2021-12-01) Multiplication seems to be another case of working once more data and compute is thrown at the problem. 12 dense layers with 1024 neurons and additive residuals between each layer achieves 87% ok after about 100 epochs...
 - (2021-11-30) Most difficult operation for the net to learn is always `*`. All bitwise operations and comparisations are usually learned quickly with almost any architecture, followed by `+`, `-` and interestingly also `/` and even `%`. Why this experiment has so much more difficulties in learning how to multiply is currently unknown. Interestingly, if ALU operations are restricted to just `*` (by setting `valid_ops=['*']`), again almost all network architectures start to learn multiplication within a short timespan at least to some degree. Why this doesn't work in the same way with all operations enabled is currently unknown. 
 
 ### Colab and remote Tensorboard via Google Drive sync
