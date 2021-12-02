@@ -59,35 +59,52 @@ class ResidualDense(layers.Layer):
         x=x+inputs
         return x
 
-class ParallelResidualDense(layers.Layer):
-    def __init__(self, units, parallel_stacks, **kwargs):
+class ResidualDenseStack(layers.Layer):
+    def __init__(self, units, layers, **kwargs):
         self.units=units
-        self.parallel_stacks=parallel_stacks
-        super(ParallelResidualDense, self).__init__(**kwargs)
-        self.dense=[]
-        self.bn=[]
-        self.relu=[]
-        for _ in range(0, self.parallel_stacks):
-            self.dense.append(layers.Dense(self.units))
-            self.bn.append(layers.BatchNormalization())
-            self.relu.append(layers.ReLU())
+        self.layers=layers
+
+        super(ResidualDenseStack, self).__init__(**kwargs)
+        self.rd=[]
+        for _ in range(0, self.layers):
+            self.rd.append(ResidualDense(self.units))
 
     def get_config(self):
         config = super().get_config()
         config.update({
             'units': self.units,
-            'parallel_stacks': self.parallel_stacks
+            'layers': self.layers
         })
         return config
 
     def call(self, inputs):
-        x=self.dense[0](inputs)
-        x=self.relu[0](x)
-        y=self.bn[0](x)
+        x=self.rd[0](inputs)
         for i in range(1, self.parallel_stacks):
-            x=self.dense[i](inputs)
-            x=self.relu[i](x)
-            x=self.bn[i](x)
-            y=y+x
-        y=y+inputs
-        return y
+            x=self.rd[i](x[i])
+        return x
+
+class ParallelResidualDenseStacks(layers.Layer):
+    def __init__(self, units, layers, stacks, **kwargs):
+        self.units=units
+        self.layers=layers
+        self.stacks=stacks
+        super(ParallelResidualDenseStacks, self).__init__(**kwargs)
+        self.rds=[]
+        for _ in range(0, self.stacks):
+            self.rds.append(ResidualDenseStack(self.units, self.layers))
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            'units': self.units,
+            'layers': self.layers,
+            'stacks': self.stacks
+        })
+        return config
+
+    def call(self, inputs):
+        x=self.rds[0](inputs)
+        for i in range(1, self.stacks):
+            x = x+self.rds[i](inputs)
+        x=x+inputs
+        return x
