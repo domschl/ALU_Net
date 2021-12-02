@@ -36,3 +36,25 @@ class ResidualBlock(layers.Layer):
             x=x+inputs
             x=self.relu2(x)
         return x
+
+class ResidualDense(layers.Layer):
+    def __init__(self, units, **kwargs):
+        self.units=units
+        super(ResidualBlock, self).__init__(**kwargs)
+        self.dense1 = layers.Dense(self.units)
+        self.bn1 = layers.BatchNormalization()
+        self.relu = layers.ReLU()
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            'units': self.units
+        })
+        return config
+
+    def call(self, inputs):
+        x=self.dense1(inputs)
+        x=self.relu(x)
+        x=self.bn1(x)
+        x=x+inputs
+        return x
