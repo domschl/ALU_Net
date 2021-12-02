@@ -40,7 +40,7 @@ class ResidualBlock(layers.Layer):
 class ResidualDense(layers.Layer):
     def __init__(self, units, **kwargs):
         self.units=units
-        super(ResidualBlock, self).__init__(**kwargs)
+        super(ResidualDense, self).__init__(**kwargs)
         self.dense1 = layers.Dense(self.units)
         self.bn1 = layers.BatchNormalization()
         self.relu = layers.ReLU()
