@@ -79,7 +79,7 @@ class ResidualDenseStack(layers.Layer):
 
     def call(self, inputs):
         x=self.rd[0](inputs)
-        for i in range(1, self.parallel_stacks):
+        for i in range(1, self.layers):
             x=self.rd[i](x[i])
         return x
 
