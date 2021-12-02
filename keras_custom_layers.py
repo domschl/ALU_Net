@@ -80,7 +80,7 @@ class ResidualDenseStack(layers.Layer):
     def call(self, inputs):
         x=self.rd[0](inputs)
         for i in range(1, self.layers):
-            x=self.rd[i](x[i])
+            x=self.rd[i](x)
         return x
 
 class ParallelResidualDenseStacks(layers.Layer):
