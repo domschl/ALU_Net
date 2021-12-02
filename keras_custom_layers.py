@@ -4,9 +4,10 @@ import tensorflow.keras as keras
 from tensorflow.keras import layers
 
 class ResidualBlock(layers.Layer):
-    def __init__(self, units):
+    def __init__(self, units, highway=False, **kwargs):
         self.units=units
-        super(ResidualBlock, self).__init__()
+        self.highway=highway
+        super(ResidualBlock, self).__init__(**kwargs)
         self.dense1 = layers.Dense(self.units)
         self.bn1 = layers.BatchNormalization()
         self.relu = layers.ReLU()
@@ -17,7 +18,8 @@ class ResidualBlock(layers.Layer):
     def get_config(self):
         config = super().get_config()
         config.update({
-            'units': self.units
+            'units': self.units,
+            'highway': self.highway
         })
         return config
 
@@ -27,6 +29,10 @@ class ResidualBlock(layers.Layer):
         x=self.relu(x)
         x=self.dense2(x)
         x=self.bn2(x)
-        x=x+inputs
-        x=self.relu2(x)
-        return x        
+        if self.highway:
+            x=self.relu2(x)
+            x=x+inputs
+        else:
+            x=x+inputs
+            x=self.relu2(x)
+        return x
