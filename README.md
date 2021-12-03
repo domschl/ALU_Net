@@ -3,13 +3,10 @@
 <a href="https://colab.research.google.com/github/domschl/ALU_Net/blob/main/ALU_Net.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE)
 
-Create an ALU (arithmetic logic unit) via neural nets using Colab TPUs, GPUs are on local Jupyter instances.
+An ALU (arithmetic logic unit) via neural nets using Colab TPUs, GPUs or local hardware and local Jupyter instances.
 If used with Colab, user's Google Drive is used for persistant storage.
 
 It can be used with Mac M1 GPU, if [Apple's tensorflow plugin](https://developer.apple.com/metal/tensorflow-plugin/) is installed.
-
-If used with Google Colab, a Google Drive account is used to save trained model data and tensorboard logs to your google drive.
-This allows easy exporting of trained nets and using remote Tensorboard instances to monitor the training on Colab.
 
 ## Experiment
 
@@ -81,7 +78,7 @@ OP*: Ok: 82, Error: 18 -> 82.0%
 Currently support are
 
 - Local jupyter instances with a local graphics card
-- Mac M1 metal graphics with local jupyter instance and Apple's tensorflow-plugin
+- Mac M1 metal graphics with local jupyter instance and Apple's [tensorflow-plugin](https://developer.apple.com/metal/tensorflow-plugin/)
 - Google Colab instances with either GPU or TPU runtime. The colab version uses a Google Drive account to cache data and model state within a Google Drive directory `My Drive/Colab Notebooks/ALU_Net`.
 
 It's possible to start training on one platform (e.g. Google Colab TPU) and then transfer the result to local hardware (e.g. a Mac M1).
