@@ -92,6 +92,7 @@ class ParallelResidualDenseStacks(layers.Layer):
         self.rds=[]
         for _ in range(0, self.stacks):
             self.rds.append(ResidualDenseStack(self.units, self.layers))
+        self.relu = layers.ReLU()
 
     def get_config(self):
         config = super().get_config()
@@ -106,5 +107,6 @@ class ParallelResidualDenseStacks(layers.Layer):
         x=self.rds[0](inputs)
         for i in range(1, self.stacks):
             x = x+self.rds[i](inputs)
+        x=self.relu(x)
         x=x+inputs
         return x
