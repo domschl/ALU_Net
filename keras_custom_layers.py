@@ -38,17 +38,22 @@ class ResidualBlock(layers.Layer):
         return x
 
 class ResidualDense(layers.Layer):
-    def __init__(self, units, **kwargs):
+    def __init__(self, units, regularizer=0, **kwargs):
         self.units=units
+        self.regularizer=regularizer
         super(ResidualDense, self).__init__(**kwargs)
-        self.dense1 = layers.Dense(self.units)
+        if self.regularizer != 0:
+            self.dense1 = layers.Dense(self.units, kernel_regularizer=keras.regularizers.l2(self.regularizer))
+        else:
+            self.dense1 = layers.Dense(self.units)       
         self.bn1 = layers.BatchNormalization()
         self.relu = layers.ReLU()
 
     def get_config(self):
         config = super().get_config()
         config.update({
-            'units': self.units
+            'units': self.units,
+            'regularizer': self.regularizer
         })
         return config
 
@@ -60,20 +65,22 @@ class ResidualDense(layers.Layer):
         return x
 
 class ResidualDenseStack(layers.Layer):
-    def __init__(self, units, layer_count, **kwargs):
+    def __init__(self, units, layer_count, regularizer=0, **kwargs):
         self.units=units
         self.layer_count=layer_count
+        self.regularizer=regularizer
 
         super(ResidualDenseStack, self).__init__(**kwargs)
         self.rd=[]
         for _ in range(0, self.layer_count):
-            self.rd.append(ResidualDense(self.units))
+            self.rd.append(ResidualDense(self.units, regularizer=self.regularizer))
 
     def get_config(self):
         config = super().get_config()
         config.update({
             'units': self.units,
-            'layers': self.layer_count
+            'layers': self.layer_count,
+            'regularizer': self.regularizer
         })
         return config
 
@@ -84,14 +91,15 @@ class ResidualDenseStack(layers.Layer):
         return x
 
 class ParallelResidualDenseStacks(layers.Layer):
-    def __init__(self, units, layer_count, stacks, **kwargs):
+    def __init__(self, units, layer_count, stacks, regularizer=0, **kwargs):
         self.units=units
         self.layer_count=layer_count
         self.stacks=stacks
+        self.regularizer=regularizer
         super(ParallelResidualDenseStacks, self).__init__(**kwargs)
         self.rds=[]
         for _ in range(0, self.stacks):
-            self.rds.append(ResidualDenseStack(self.units, self.layer_count))
+            self.rds.append(ResidualDenseStack(self.units, self.layer_count, regularizer=self.regularizer))
         self.relu = layers.ReLU()
 
     def get_config(self):
@@ -99,7 +107,8 @@ class ParallelResidualDenseStacks(layers.Layer):
         config.update({
             'units': self.units,
             'layers': self.layer_count,
-            'stacks': self.stacks
+            'stacks': self.stacks,
+            'regularizer': self.regularizer
         })
         return config
 
