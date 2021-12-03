@@ -60,45 +60,45 @@ class ResidualDense(layers.Layer):
         return x
 
 class ResidualDenseStack(layers.Layer):
-    def __init__(self, units, layers, **kwargs):
+    def __init__(self, units, layer_count, **kwargs):
         self.units=units
-        self.layers=layers
+        self.layer_count=layer_count
 
         super(ResidualDenseStack, self).__init__(**kwargs)
         self.rd=[]
-        for _ in range(0, self.layers):
+        for _ in range(0, self.layer_count):
             self.rd.append(ResidualDense(self.units))
 
     def get_config(self):
         config = super().get_config()
         config.update({
             'units': self.units,
-            'layers': self.layers
+            'layers': self.layer_count
         })
         return config
 
     def call(self, inputs):
         x=self.rd[0](inputs)
-        for i in range(1, self.layers):
+        for i in range(1, self.layer_count):
             x=self.rd[i](x)
         return x
 
 class ParallelResidualDenseStacks(layers.Layer):
-    def __init__(self, units, layers, stacks, **kwargs):
+    def __init__(self, units, layer_count, stacks, **kwargs):
         self.units=units
-        self.layers=layers
+        self.layer_count=layer_count
         self.stacks=stacks
         super(ParallelResidualDenseStacks, self).__init__(**kwargs)
         self.rds=[]
         for _ in range(0, self.stacks):
-            self.rds.append(ResidualDenseStack(self.units, self.layers))
+            self.rds.append(ResidualDenseStack(self.units, self.layer_count))
         self.relu = layers.ReLU()
 
     def get_config(self):
         config = super().get_config()
         config.update({
             'units': self.units,
-            'layers': self.layers,
+            'layers': self.layer_count,
             'stacks': self.stacks
         })
         return config
