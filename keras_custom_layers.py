@@ -101,6 +101,8 @@ class ParallelResidualDenseStacks(layers.Layer):
         for _ in range(0, self.stacks):
             self.rds.append(ResidualDenseStack(self.units, self.layer_count, regularizer=self.regularizer))
         self.relu = layers.ReLU()
+        self.concat = layers.Concatenate()
+        self.dense = layers.Dense(self.units)
 
     def get_config(self):
         config = super().get_config()
@@ -113,9 +115,12 @@ class ParallelResidualDenseStacks(layers.Layer):
         return config
 
     def call(self, inputs):
-        x=self.rds[0](inputs)
-        for i in range(1, self.stacks):
-            x = x+self.rds[i](inputs)
+        xa=[]
+        # x=self.rds[0](inputs)
+        for i in range(0, self.stacks):
+            xa.append(self.rds[i](inputs))
+            # x = x+self.rds[i](inputs)
+        x=self.concat(xa)
+        x=self.dense(x)
         x=self.relu(x)
-        # x=x+inputs
         return x
