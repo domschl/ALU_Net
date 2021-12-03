@@ -1,4 +1,4 @@
-# ALU_Net [WIP]
+# ALU_Net
 
 <a href="https://colab.research.google.com/github/domschl/ALU_Net/blob/main/ALU_Net.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE)
@@ -10,8 +10,6 @@ It can be used with Mac M1 GPU, if [Apple's tensorflow plugin](https://developer
 
 If used with Google Colab, a Google Drive account is used to save trained model data and tensorboard logs to your google drive.
 This allows easy exporting of trained nets and using remote Tensorboard instances to monitor the training on Colab.
-
-_This is work in progress_
 
 ## Experiment
 
@@ -25,7 +23,6 @@ The input vector has dimension 44 (`2*16 + 12`), the output has dimension 32.
 ### Example results after a short period of training
 
 This shows lines in format:
-
 
 ```
 <int> <operation> <int> = <net-eval> ==/!= <actual result> OK/Error
