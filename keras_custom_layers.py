@@ -108,5 +108,5 @@ class ParallelResidualDenseStacks(layers.Layer):
         for i in range(1, self.stacks):
             x = x+self.rds[i](inputs)
         x=self.relu(x)
-        x=x+inputs
+        # x=x+inputs
         return x
