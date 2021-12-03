@@ -102,7 +102,10 @@ class ParallelResidualDenseStacks(layers.Layer):
             self.rds.append(ResidualDenseStack(self.units, self.layer_count, regularizer=self.regularizer))
         self.relu = layers.ReLU()
         self.concat = layers.Concatenate()
-        self.dense = layers.Dense(self.units, kernel_regularizer=keras.regularizers.l2(self.regularizer))
+        if self.regularizer != 0:
+            self.dense = layers.Dense(self.units, kernel_regularizer=keras.regularizers.l2(self.regularizer))
+        else:
+            self.dense = layers.Dense(self.units)
 
     def get_config(self):
         config = super().get_config()
@@ -121,9 +124,6 @@ class ParallelResidualDenseStacks(layers.Layer):
             xa.append(self.rds[i](inputs))
             # x = x+self.rds[i](inputs)
         x=self.concat(xa)
-        if self.regularizer != 0:
-            x=self.dense(x)
-        else:
-            x=self.dense(x)
+        x=self.dense(x)
         x=self.relu(x)
         return x
