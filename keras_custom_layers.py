@@ -130,13 +130,10 @@ class ParallelResidualDenseStacks(layers.Layer):
         # Scale up
         x=self.scale(inputs)
         for i in range(0, self.stacks):
-            if i==0:
-                if self.dispatch:
-                    xa.append(self.rds[0](x[:,i*self.units:(i+1)*self.units]))
-                else:
-                    xa.append(self.rds[0](x))
+            if self.dispatch:
+                xa.append(self.rds[i](x[:,i*self.units:(i+1)*self.units]))
             else:
-                xa.append(self.rds[i](inputs))
+                xa.append(self.rds[i](x))
         x=self.concat(xa)
         x=self.dense(x)
         x=self.relu(x)
