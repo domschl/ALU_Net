@@ -99,6 +99,8 @@ class ParallelResidualDenseStacks(layers.Layer):
 
         if self.dispatch is True:
             self.scale = layers.Dense(units*stacks, activation=None)
+        else:
+            self.scale = layers.Dense(units, activation=None)
 
         self.regularizer=regularizer
         super(ParallelResidualDenseStacks, self).__init__(**kwargs)
@@ -125,11 +127,8 @@ class ParallelResidualDenseStacks(layers.Layer):
 
     def call(self, inputs):
         xa=[]
-        if self.dispatch:
-            # Scale up
-            x=self.scale(inputs)
-        else:
-            x=inputs
+        # Scale up
+        x=self.scale(inputs)
         for i in range(0, self.stacks):
             if i==0:
                 if self.dispatch:
