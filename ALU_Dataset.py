@@ -271,7 +271,7 @@ class ALU_Dataset():
             print()
         return dpx, dpy
 
-    def create_dataset(self, samples=10000, batch_size=2000, short_math=False, valid_ops=None, name=None, cache_path=None, use_cache=True, regenerate_cached_data=False):
+    def create_dataset(self, samples=10000, batch_size=2000, is_training=True, short_math=False, valid_ops=None, name=None, cache_path=None, use_cache=True, regenerate_cached_data=False):
         is_loaded=False
         if use_cache is True and cache_path is None:
             print("can't use cache if no cache_path is given, disabling cache!")
@@ -320,9 +320,10 @@ class ALU_Dataset():
                 print(", Y, done.")
         shuffle_buffer=10000
         dataset=tf.data.Dataset.from_tensor_slices((x, Y)).cache()
-        dataset=dataset.shuffle(shuffle_buffer, reshuffle_each_iteration=True)
-        if self.ml_env.is_tpu is True:
-            dataset=dataset.repeat() # Mandatory for Keras TPU for now
+        if is_training is True:
+            dataset=dataset.shuffle(shuffle_buffer, reshuffle_each_iteration=True)
+            if self.ml_env.is_tpu is True:
+                dataset=dataset.repeat() # Mandatory for Keras TPU for now
         dataset=dataset.batch(batch_size, drop_remainder=True) # drop_remainder is important on TPU, batch size must be fixed
         dataset=dataset.prefetch(-1) # fetch next batches while training on the current one (-1: autotune prefetch buffer size)
         return dataset
@@ -337,9 +338,9 @@ class ALU_Dataset():
         return dataset
 
     def get_datasets(self, pre_weight=True, samples=100000, validation_samples=10000, batch_size=2000, short_math=False, valid_ops=None, cache_path=None, use_cache=True, regenerate_cached_data=False):
-        train = self.create_dataset(samples=samples, batch_size=batch_size, short_math=short_math, valid_ops=valid_ops,
+        train = self.create_dataset(samples=samples, batch_size=batch_size, is_training=True, short_math=short_math, valid_ops=valid_ops,
                                         name="train",cache_path=cache_path, use_cache=use_cache, regenerate_cached_data=regenerate_cached_data)
-        val = self.create_dataset(samples=validation_samples, batch_size=batch_size, short_math=short_math, valid_ops=valid_ops,
+        val = self.create_dataset(samples=validation_samples, batch_size=batch_size, is_training=False, short_math=short_math, valid_ops=valid_ops,
                                     name="validation",cache_path=cache_path, use_cache=use_cache, regenerate_cached_data=regenerate_cached_data)
         return train, val
 
