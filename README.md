@@ -12,10 +12,10 @@ It can be used with Mac M1 GPU, if [Apple's tensorflow plugin](https://developer
 
 <img align="right" width="300" src="https://github.com/domschl/ALU_Net/blob/main/resources/ALU.png">
 
-The neural network is expected to learn arithmetic and logic operations between two unsigned 15 bit integers. The possible operations are: `+`, `-`, `/` (integer division), `*`, `%` (modulo), `AND` boolean bitwise AND, `OR` boolean bitwise OR, '`XOR` boolean bitwise XOR and the comparators `=`, `<`, `>`, `!=`.
-Each integer is encoded as 16 input neurons [only 15 bits are currently used, positive ints only -- this might change] (`0.0` level for bit zero, `1.0` level for bit one), the operation is encoded binary as 12 neurons (one-hot encoding for the 12 opcodes).
-The result of the network is a 32 bit integer again binary encoded. The value `True` is encoded as `0b1111111111111111`, `False` is `0b0000000000000000`.
-The input vector has dimension 44 (`2*16 + 12`), the output has dimension 32.
+The neural network is expected to learn arithmetic and logic operations between two unsigned `bit_count - 1` bit integers. The possible operations are: `+`, `-`, `/` (integer division), `*`, `%` (modulo), `AND` boolean bitwise AND, `OR` boolean bitwise OR, '`XOR` boolean bitwise XOR and the comparators `=`, `<`, `>`, `!=`.
+Each integer is encoded as `bit_count` input neurons [only `bit_count - 1` bits are currently used, positive ints only -- this might change] (`0.0` level for bit zero, `1.0` level for bit one), the operation is encoded binary as `op_count` (number of different ops, e.g. 12) neurons (one-hot encoding for the `op_count` opcodes).
+The result of the network is a `bit_count` bit integer again binary encoded. The value `True` is encoded as `2**bit_count - 1`, `False` is `0x0`.
+The input vector has dimension (`2*bit_count + op_count`), the output has dimension `bit_count`. For multiplication, the operands are restricted to `2**(bit_count//2) - 1`, so that the result always fits into `2**bit_count`.
 
 ### Example results after a short period of training
 
