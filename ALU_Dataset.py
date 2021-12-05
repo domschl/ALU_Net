@@ -344,8 +344,7 @@ class ALU_Dataset():
                                     name="validation",cache_path=cache_path, use_cache=use_cache, regenerate_cached_data=regenerate_cached_data)
         return train, val
 
-    @staticmethod
-    def decode_results(result_int_vects):
+    def decode_results(self, result_int_vects):
         """ take an array of 32-float results from neural net and convert to ints """
         result_vect_ints = []
         for vect in result_int_vects:
