@@ -93,12 +93,13 @@ Since (as far as I know) exporting the complete model for TPUs to local colab (o
 ## Customizing models and training
 
 * The function create_load_model() creates (or loads the state from either Google Drive or local filesystem) one several pre-defined models: e.g. `minimal`, `medium` and `large`, referred in dictionary `model_variants`. To try different models simply at one to this function. At training-time the model is selected by the global `model_variant=`
-* The global `valid_ops` determines if all 12 ALU operation (`+`, `-`, `*`, .. `!=`) are used or only a subset. If `valid_ops` is `None`, all 12 operations are trained, alternatively a list of operations can be given: `valid_ops = ['*', '/']` would only train the model on multiplication and division.
+* The global `valid_ops` determines if all `op_count` (default: 12) ALU operation (`+`, `-`, `*`, .. `!=`) are used or only a subset. If `valid_ops` is `None`, all operations are trained, alternatively a list of operations can be given: `valid_ops = ['*', '/']` would only train the model on multiplication and division.
 
 ## Unsorted notes
 
 ### Notes on experiments
 
+- (2021-12-05) ALU_Dataset has been generalized to arbitrary `bit_counts`. It seems that a 16 bit ALU does successfully train all operations. Increasing `bit_count`, works more or less effortless for all operations other than multiplication.
 - (2021-12-01) Multiplication seems to be another case of working once more data and compute is thrown at the problem. 12 dense layers with 1024 neurons and additive residuals between each layer achieves 87% ok after about 100 epochs...
 - (2021-11-30) Most difficult operation for the net to learn is always `*`. All bitwise operations and comparisations are usually learned quickly with almost any architecture, followed by `+`, `-` and interestingly also `/` and even `%`. Why this experiment has so much more difficulties in learning how to multiply is currently unknown. Interestingly, if ALU operations are restricted to just `*` (by setting `valid_ops=['*']`), again almost all network architectures start to learn multiplication within a short timespan at least to some degree. Why this doesn't work in the same way with all operations enabled is currently unknown. 
 
