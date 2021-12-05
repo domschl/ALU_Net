@@ -149,8 +149,7 @@ class ALU_Dataset():
         result = op1-op2
         return op1, op2, result
 
-    @staticmethod
-    def mult_smpl(op1, op2):
+    def mult_smpl(self, op1, op2):
         """ multiplication training example """
         modul = 2**(self.bit_count//2) - 1
         op1 = op1 % modul
