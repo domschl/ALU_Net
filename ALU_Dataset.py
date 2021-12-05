@@ -297,8 +297,8 @@ class ALU_Dataset():
                     infix+=vo
             else:
                 infix=""
-            cache_file_x=os.path.join(cache_path, f"{name}_{infix}_{samples}_x.npy")
-            cache_file_Y=os.path.join(cache_path, f"{name}_{infix}_{samples}_Y.npy")
+            cache_file_x=os.path.join(cache_path, f"{name}_{infix}_{self.bit_count}_{samples}_x.npy")
+            cache_file_Y=os.path.join(cache_path, f"{name}_{infix}_{self.bit_count}_{samples}_Y.npy")
         if use_cache is True  and regenerate_cached_data is False and os.path.exists(cache_file_x) and os.path.exists(cache_file_Y):
             try:
                 x = np.load(cache_file_x, allow_pickle=True)
