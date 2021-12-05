@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="210mm"
    height="297mm"
    viewBox="0 0 210 297"
    version="1.1"
    id="svg8"
-   inkscape:version="1.0.2 (e86c8708, 2021-01-15)"
-   sodipodi:docname="ALU.svg">
+   inkscape:version="1.1.1 (c3084ef, 2021-09-22)"
+   sodipodi:docname="ALU.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -23,18 +23,19 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.9899495"
-     inkscape:cx="264.94389"
-     inkscape:cy="164.69075"
+     inkscape:zoom="1.0610557"
+     inkscape:cx="221.0063"
+     inkscape:cy="359.07633"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
      showgrid="false"
-     inkscape:window-width="1565"
-     inkscape:window-height="967"
-     inkscape:window-x="37"
+     inkscape:window-width="1440"
+     inkscape:window-height="794"
+     inkscape:window-x="0"
      inkscape:window-y="25"
-     inkscape:window-maximized="0" />
+     inkscape:window-maximized="0"
+     inkscape:pagecheckerboard="0" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -438,32 +439,27 @@
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:6.35px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
        x="18.708866"
-       y="37.369385"
+       y="46.365227"
        id="text422"><tspan
          sodipodi:role="line"
-         id="tspan420"
          x="18.708866"
-         y="37.369385"
-         style="font-size:6.35px;stroke-width:0.264583">Input </tspan><tspan
-         sodipodi:role="line"
-         x="18.708866"
-         y="45.306885"
+         y="46.365227"
          style="font-size:6.35px;stroke-width:0.264583"
-         id="tspan428">(44 neurons, 2x16 bit integer 12bit operation))</tspan></text>
+         id="tspan428">Input </tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:6.35px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       x="37.930786"
+       x="17.293266"
        y="137.67239"
        id="text426"><tspan
          sodipodi:role="line"
          id="tspan424"
-         x="37.930786"
+         x="17.293266"
          y="137.67239"
-         style="font-size:6.35px;stroke-width:0.264583">Output (32 neurons, 32 bit integer)</tspan></text>
+         style="font-size:6.35px;stroke-width:0.264583">Output (bit_count neurons, bit_count bit integer)</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:6.35px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       style="font-style:normal;font-weight:normal;font-size:4.93889px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
        x="18.708866"
        y="53.464645"
        id="text432"><tspan
@@ -471,7 +467,7 @@
          id="tspan430"
          x="18.708866"
          y="53.464645"
-         style="font-size:6.35px;stroke-width:0.264583">Integer 1 (16bit)   (Op 12bit) Integer 2 (16bit)  </tspan></text>
+         style="font-size:4.93889px;stroke-width:0.264583">Integer 1 (bit_count bit)   (Op 12bit) Integer 2 (bit_count bit)  </tspan></text>
     <rect
        style="fill:none;stroke:#e50000;stroke-width:1"
        id="rect436"
