@@ -51,7 +51,7 @@ class ALU_Dataset():
         return num_vect
 
     @staticmethod
-    def int_to_onehot_vect(num_int, num_bits=len(self.model_ops)):
+    def int_to_onehot_vect(num_int, num_bits):
         """ get a one-hot encoded vector of n of bit-lenght nm """
         num_vect = np.zeros(num_bits, dtype=np.float32)
         num_vect[num_int] = 1.0
