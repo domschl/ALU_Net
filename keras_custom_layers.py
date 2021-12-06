@@ -144,15 +144,17 @@ class SelfAttention(layers.Layer):
     def __init__(self, units, **kwargs):
         super(SelfAttention, self).__init__(**kwargs)
         self.units=units
-    
+        self.pm = layers.Permute((2,1))
+        self.softmax = layers.Softmax()
+
     def build(self, input_shape):
         self.w_keys = self.add_weight(shape=(input_shape[-1], self.units),
                                       initializer="random_normal", trainable=True)
         self.w_queries = self.add_weight(shape=(input_shape[-1], self.units),
                                       initializer="random_normal", trainable=True)
-        self.w_values = self.add_weight(shape=(input_shape[-1], input_shape[-1]), # unusual symmetry?
+        self.w_values = self.add_weight(shape=(input_shape[-1], self.units),
                                       initializer="random_normal", trainable=True)
-        self.softmax = layers.Softmax()
+        self.scale = self.add_weight(shape=(self.units, input_shape[-1]))
 
     def get_config(self):
         config = super().get_config()
@@ -167,7 +169,9 @@ class SelfAttention(layers.Layer):
         vv = tf.matmul(inputs, self.w_values)
         kq = tf.matmul(vk, vq, transpose_b=True)/math.sqrt(self.units)
         sm = self.softmax(kq)
-        out = tf.matmul(sm, vv)
+        print(f"sm={sm.shape}, vv={vv.shape}")
+        x = tf.matmul(sm, self.pm(vv), transpose_b=True)
+        out = tf.matmul(x, self.scale)
         return out
 
 class MultiHeadSelfAttention(layers.Layer):
