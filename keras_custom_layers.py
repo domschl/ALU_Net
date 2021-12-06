@@ -141,88 +141,67 @@ class ParallelResidualDenseStacks(layers.Layer):
         return x
 
 class SelfAttention(layers.Layer):
-    def __init__(self, units, **kwargs):
+    def __init__(self, **kwargs):
         super(SelfAttention, self).__init__(**kwargs)
-        self.units=units
         self.pm = layers.Permute((2,1))
         self.softmax = layers.Softmax()
 
     def build(self, input_shape):
-        self.w_keys = self.add_weight(shape=(input_shape[-1], self.units),
+        # super(SelfAttention, self).build(input_shape)
+        self.fact = math.sqrt(input_shape[1])
+        self.w_keys = self.add_weight(shape=(input_shape[1], input_shape[1]),
                                       initializer="random_normal", trainable=True)
-        self.w_queries = self.add_weight(shape=(input_shape[-1], self.units),
+        self.w_queries = self.add_weight(shape=(input_shape[1], input_shape[1]),
                                       initializer="random_normal", trainable=True)
-        self.w_values = self.add_weight(shape=(input_shape[-1], self.units),
+        self.w_values = self.add_weight(shape=(input_shape[1], input_shape[1]),
                                       initializer="random_normal", trainable=True)
-        self.scale = self.add_weight(shape=(self.units, input_shape[-1]))
 
     def get_config(self):
         config = super().get_config()
         config.update({
-            'units': self.units
         })
         return config 
 
     def call(self, inputs):
-        vk = tf.matmul(inputs, self.w_keys)
-        vq = tf.matmul(inputs, self.w_queries)
-        vv = tf.matmul(inputs, self.w_values)
-        kq = tf.matmul(vk, vq, transpose_b=True)/math.sqrt(self.units)
+        ip = self.pm(inputs)
+        vk = tf.matmul(ip, self.w_keys)
+        vq = tf.matmul(ip, self.w_queries)
+        vv = tf.matmul(ip, self.w_values)
+        kq = tf.matmul(vk, vq, transpose_b=True)/self.fact
         sm = self.softmax(kq)
-        # print(f"sm={sm.shape}, vv={vv.shape}")
-        x = tf.matmul(sm, self.pm(vv), transpose_b=True)
-        out = tf.matmul(x, self.scale)
+        print(f"sm={sm.shape}, vv={vv.shape}")
+        out = tf.matmul(sm, self.pm(vv), transpose_b=True)
+        out = self.pm(out)
         return out
 
 class MultiHeadSelfAttention(layers.Layer):
-    def __init__(self, units, heads, additive=False, **kwargs):
+    def __init__(self, heads, **kwargs):
         super(MultiHeadSelfAttention, self).__init__(**kwargs)
-        self.units=units
         self.heads=heads
-        self.additive=additive
         self.mhsa=[]
         for _ in range(0,self.heads):
-            self.mhsa.append(SelfAttention(self.units))
-        if self.additive is False:
-            self.cc = layers.Concatenate(axis=1)
-            self.pm = layers.Permute((2,1))
+            self.mhsa.append(SelfAttention())
+        self.cc = layers.Concatenate(axis=1)
+        self.pm = layers.Permute((2,1))
 
     def build(self, input_shape):
-        if self.additive is False:
-            self.w_heads = self.add_weight(shape=(input_shape[-1], input_shape[-1]),
-                                        initializer="random_normal", trainable=True)
-            self.w_xheads = self.add_weight(shape=(self.heads*input_shape[1], input_shape[1]),
-                                        initializer="random_normal", trainable=True)
-        else:
-            self.w_heads = []
-            for _ in range(0, self.heads):
-                self.w_heads.append(self.add_weight(shape=(input_shape[-1], input_shape[-1]),
-                                        initializer="random_normal", trainable=True))
+        # super(SelfAttention, self).build(input_shape)
+        self.w_heads = self.add_weight(shape=(self.heads * input_shape[1], input_shape[1]),
+                                      initializer="random_normal", trainable=True)
                                     
-
     def get_config(self):
         config = super().get_config()
         config.update({
-            'units': self.units,
             'heads': self.heads,
-            'additive': self.additive
         })
         return config
 
     def call(self, inputs):
-        if self.additive is True:
-            for i in range(0, self.heads):
-                if i==0:
-                    x=tf.matmul(self.mhsa[i](inputs), self.w_heads[i])
-                else:
-                    x=x+tf.matmul(self.mhsa[i](inputs), self.w_heads[i])
-        else:
-            xa=[]
-            for i in range(0, self.heads):
-                xa.append(self.mhsa[i](inputs))
-            x=self.cc(xa)
-            x = tf.matmul(x, self.w_heads)
-            x = self.pm(x)
-            x = tf.matmul(x, self.w_xheads)
-            x = self.pm(x)
+        xa=[]
+        for i in range(0, self.heads):
+            xa.append(self.mhsa[i](inputs))
+        x=self.cc(xa)
+        x=self.pm(x)
+        x = tf.matmul(x, self.w_heads)
+        x = self.pm(x)
         return x
