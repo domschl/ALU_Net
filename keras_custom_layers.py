@@ -141,24 +141,31 @@ class ParallelResidualDenseStacks(layers.Layer):
         return x
 
 class SelfAttention(layers.Layer):
-    def __init__(self, **kwargs):
+    def __init__(self, units=None, **kwargs):
         super(SelfAttention, self).__init__(**kwargs)
         self.pm = layers.Permute((2,1))
+        self.units = units
         self.softmax = layers.Softmax()
 
     def build(self, input_shape):
         # super(SelfAttention, self).build(input_shape)
         self.fact = math.sqrt(input_shape[1])
-        self.w_keys = self.add_weight(shape=(input_shape[1], input_shape[1]),
+        if self.units is None:
+            self.units = input_shape[1]
+        else:
+            self.scale = self.add_weight(shape=(self.units, input_shape[1]),
                                       initializer="random_normal", trainable=True)
-        self.w_queries = self.add_weight(shape=(input_shape[1], input_shape[1]),
+        self.w_keys = self.add_weight(shape=(input_shape[1], self.units),
                                       initializer="random_normal", trainable=True)
-        self.w_values = self.add_weight(shape=(input_shape[1], input_shape[1]),
+        self.w_queries = self.add_weight(shape=(input_shape[1], self.units),
+                                      initializer="random_normal", trainable=True)
+        self.w_values = self.add_weight(shape=(input_shape[1], self.units),
                                       initializer="random_normal", trainable=True)
 
     def get_config(self):
         config = super().get_config()
         config.update({
+            'units': self.units
         })
         return config 
 
@@ -171,16 +178,19 @@ class SelfAttention(layers.Layer):
         sm = self.softmax(kq)
         # print(f"sm={sm.shape}, vv={vv.shape}")
         out = tf.matmul(sm, self.pm(vv), transpose_b=True)
+        if self.units is not None:
+            out = tf.matmul(out, self.scale)
         out = self.pm(out)
         return out
 
 class MultiHeadSelfAttention(layers.Layer):
-    def __init__(self, heads, **kwargs):
+    def __init__(self, heads, units=None, **kwargs):
         super(MultiHeadSelfAttention, self).__init__(**kwargs)
         self.heads=heads
+        self.units = units
         self.mhsa=[]
         for _ in range(0,self.heads):
-            self.mhsa.append(SelfAttention())
+            self.mhsa.append(SelfAttention(self.units))
         self.cc = layers.Concatenate(axis=1)
         self.pm = layers.Permute((2,1))
 
@@ -193,6 +203,7 @@ class MultiHeadSelfAttention(layers.Layer):
         config = super().get_config()
         config.update({
             'heads': self.heads,
+            'units': self.units
         })
         return config
 
