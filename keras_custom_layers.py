@@ -171,26 +171,40 @@ class SelfAttention(layers.Layer):
         return out
 
 class MultiHeadSelfAttention(layers.Layer):
-    def __init__(self, units, heads, **kwargs):
+    def __init__(self, units, heads, additive=False, **kwargs):
         super(MultiHeadSelfAttention, self).__init__(**kwargs)
         self.units=units
         self.heads=heads
+        self.additive=additive
         self.mhsa=[]
         for _ in range(0,self.heads):
             self.mhsa.append(SelfAttention(self.units))
         self.cc = layers.Concatenate()
 
+    def build(self, input_shape):
+        self.w_heads = self.add_weight(shape=(input_shape[-1], self.units),
+                                      initializer="random_normal", trainable=True)
+
     def get_config(self):
         config = super().get_config()
         config.update({
             'units': self.units,
-            'heads': self.heads
+            'heads': self.heads,
+            'additive': self.additive
         })
         return config
 
     def call(self, inputs):
-        xa=[]
-        for i in range(0, self.heads):
-            xa.append(self.mhsa[i](inputs))
-        x=self.cc(xa)
+        if self.additive is True:
+            for i in range(0, self.heads):
+                if i==0:
+                    x=self.mhsa[i](inputs)
+                else:
+                    x=x+self.mhsa[i](inputs)
+        else:
+            xa=[]
+            for i in range(0, self.heads):
+                xa.append(self.mhsa[i](inputs))
+            x=self.cc(xa)
+            x = tf.matmul(x, self.w_heads)
         return x
