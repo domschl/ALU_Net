@@ -151,15 +151,16 @@ class SelfAttention(layers.Layer):
         # super(SelfAttention, self).build(input_shape)
         self.fact = math.sqrt(input_shape[1])
         if self.units is None:
-            self.units = input_shape[1]
+            dim2 = input_shape[1]
         else:
-            self.scale = self.add_weight(shape=(self.units, input_shape[1]),
+            dim2 = self.units
+            self.scale = self.add_weight(shape=(dim2, input_shape[1]),
                                       initializer="random_normal", trainable=True)
-        self.w_keys = self.add_weight(shape=(input_shape[1], self.units),
+        self.w_keys = self.add_weight(shape=(input_shape[1], dim2),
                                       initializer="random_normal", trainable=True)
-        self.w_queries = self.add_weight(shape=(input_shape[1], self.units),
+        self.w_queries = self.add_weight(shape=(input_shape[1], dim2),
                                       initializer="random_normal", trainable=True)
-        self.w_values = self.add_weight(shape=(input_shape[1], self.units),
+        self.w_values = self.add_weight(shape=(input_shape[1], dim2),
                                       initializer="random_normal", trainable=True)
 
     def get_config(self):
