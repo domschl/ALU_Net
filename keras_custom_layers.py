@@ -169,3 +169,28 @@ class SelfAttention(layers.Layer):
         sm = self.softmax(kq)
         out = tf.matmul(sm, vv)
         return out
+
+class MultiHeadSelfAttention(layers.Layer):
+    def __init__(self, units, heads, **kwargs):
+        super(MultiHeadSelfAttention, self).__init__(**kwargs)
+        self.units=units
+        self.heads=heads
+        self.mhsa=[]
+        for _ in range(0,self.heads):
+            self.mhsa.append(SelfAttention(self.units))
+        self.cc = layers.Concatenate()
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            'units': self.units,
+            'heads': self.heads
+        })
+        return config
+
+    def call(self, inputs):
+        xa=[]
+        for i in range(0, self.heads):
+            xa.append(self.mhsa[i](inputs))
+        x=self.cc(xa)
+        return x
