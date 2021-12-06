@@ -189,6 +189,11 @@ class MultiHeadSelfAttention(layers.Layer):
                                         initializer="random_normal", trainable=True)
             self.w_xheads = self.add_weight(shape=(self.heads*input_shape[1], input_shape[1]),
                                         initializer="random_normal", trainable=True)
+        else:
+            self.w_heads = []
+            for _ in range(0, self.heads):
+                self.w_heads.append(self.add_weight(shape=(input_shape[-1], input_shape[-1]),
+                                        initializer="random_normal", trainable=True))
                                     
 
     def get_config(self):
@@ -204,9 +209,9 @@ class MultiHeadSelfAttention(layers.Layer):
         if self.additive is True:
             for i in range(0, self.heads):
                 if i==0:
-                    x=self.mhsa[i](inputs)
+                    x=tf.matmul(self.mhsa[i](inputs), self.w_heads[i])
                 else:
-                    x=x+self.mhsa[i](inputs)
+                    x=x+tf.matmul(self.mhsa[i](inputs), self.w_heads[i])
         else:
             xa=[]
             for i in range(0, self.heads):
