@@ -191,7 +191,7 @@ class MultiHeadSelfAttention(layers.Layer):
         self.units = units
         self.mhsa=[]
         for _ in range(0,self.heads):
-            self.mhsa.append(SelfAttention(self.units))
+            self.mhsa.append(SelfAttention(units=self.units))
         self.cc = layers.Concatenate(axis=1)
         self.pm = layers.Permute((2,1))
 
