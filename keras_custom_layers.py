@@ -169,7 +169,7 @@ class SelfAttention(layers.Layer):
         vv = tf.matmul(inputs, self.w_values)
         kq = tf.matmul(vk, vq, transpose_b=True)/math.sqrt(self.units)
         sm = self.softmax(kq)
-        print(f"sm={sm.shape}, vv={vv.shape}")
+        # print(f"sm={sm.shape}, vv={vv.shape}")
         x = tf.matmul(sm, self.pm(vv), transpose_b=True)
         out = tf.matmul(x, self.scale)
         return out
