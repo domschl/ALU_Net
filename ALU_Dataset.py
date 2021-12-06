@@ -357,7 +357,7 @@ class ALU_Dataset():
                 print(f"Something went wrong when loading {cache_file_x}, {cache_file_Y}: {e}")
         if is_loaded is False:
             if vector is True:
-                dpx, dpy = self.create_vector_training_data(
+                x, Y = self.create_vector_training_data(
                     samples=samples, valid_ops=valid_ops, title=name)
             else:
                 x, Y = self.create_training_data(samples=samples, valid_ops=valid_ops, title=name)
