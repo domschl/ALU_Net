@@ -314,7 +314,7 @@ class ALU_Dataset():
             print()
         return dpx, dpy
 
-    def create_dataset(self, samples=10000, batch_size=2000, is_training=True, valid_ops=None, name=None, cache_path=None, use_cache=True, regenerate_cached_data=False):
+    def create_dataset(self, samples=10000, batch_size=2000, vector=False, is_training=True, valid_ops=None, name=None, cache_path=None, use_cache=True, regenerate_cached_data=False):
         is_loaded=False
         if use_cache is True and cache_path is None:
             print("can't use cache if no cache_path is given, disabling cache!")
@@ -354,7 +354,11 @@ class ALU_Dataset():
             except Exception as e:
                 print(f"Something went wrong when loading {cache_file_x}, {cache_file_Y}: {e}")
         if is_loaded is False:
-            x, Y = self.create_training_data(samples=samples, valid_ops=valid_ops, title=name)
+            if vector is True:
+                dpx, dpy = self.create_vector_training_data(
+                    samples=samples, valid_ops=valid_ops, title=name)
+            else:
+                x, Y = self.create_training_data(samples=samples, valid_ops=valid_ops, title=name)
             if use_cache is True:
                 print(f"Writing data-cache {cache_file_x}, {cache_file_Y}...", end="")
                 np.save(cache_file_x, x, allow_pickle=True)
@@ -380,10 +384,10 @@ class ALU_Dataset():
             )
         return dataset
 
-    def get_datasets(self, pre_weight=True, samples=100000, validation_samples=10000, batch_size=2000, valid_ops=None, cache_path=None, use_cache=True, regenerate_cached_data=False):
-        train = self.create_dataset(samples=samples, batch_size=batch_size, is_training=True, valid_ops=valid_ops,
+    def get_datasets(self, pre_weight=True, samples=100000, validation_samples=10000, batch_size=2000, vector=False, valid_ops=None, cache_path=None, use_cache=True, regenerate_cached_data=False):
+        train = self.create_dataset(samples=samples, batch_size=batch_size, is_training=True, vector=vector, valid_ops=valid_ops,
                                         name="train",cache_path=cache_path, use_cache=use_cache, regenerate_cached_data=regenerate_cached_data)
-        val = self.create_dataset(samples=validation_samples, batch_size=batch_size, is_training=False, valid_ops=valid_ops,
+        val = self.create_dataset(samples=validation_samples, batch_size=batch_size, vector=vector, is_training=False, valid_ops=valid_ops,
                                     name="validation",cache_path=cache_path, use_cache=use_cache, regenerate_cached_data=regenerate_cached_data)
         return train, val
 
