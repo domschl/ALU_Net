@@ -13,9 +13,13 @@ It can be used with Mac M1 GPU, if [Apple's tensorflow plugin](https://developer
 <img align="right" width="300" src="https://github.com/domschl/ALU_Net/blob/main/resources/ALU.png">
 
 The neural network is expected to learn arithmetic and logic operations between two unsigned `bit_count - 1` bit integers. The possible operations are: `+`, `-`, `/` (integer division), `*`, `%` (modulo), `AND` boolean bitwise AND, `OR` boolean bitwise OR, '`XOR` boolean bitwise XOR and the comparators `=`, `<`, `>`, `!=`.
-Each integer is encoded as `bit_count` input neurons [only `bit_count - 1` bits are currently used, positive ints only -- this might change] (`0.0` level for bit zero, `1.0` level for bit one), the operation is encoded binary as `op_count` (number of different ops, e.g. 12) neurons (one-hot encoding for the `op_count` opcodes).
-The result of the network is a `bit_count` bit integer again binary encoded. The value `True` is encoded as `2**bit_count - 1`, `False` is `0x0`.
-The input vector has dimension (`2*bit_count + op_count`), the output has dimension `bit_count`. For multiplication, the operands are restricted to `2**(bit_count//2) - 1`, so that the result always fits into `2**bit_count`.
+Each integer is encoded as `bit_count` input neurons [only `bit_count - 1` bits are currently used, positive ints only -- this might change] (`0.0` level for bit zero, `1.0` level for bit one), the operation is encoded binary as `op_count` (number of different ops, e.g. 12) neurons (one-hot encoding for the `op_count` opcodes). For multiplication, the operands are restricted to `2**(bit_count//2) - 1`, so that the result always fits into `2**bit_count`.
+The result of the network is a `bit_count` bit integer again binary encoded. The value `True` is encoded as `2**bit_count - 1`, `False` is `0x0`, the output has dimension `bit_count`.
+
+### Input modes
+
+If `vector=False` in notebook, a linear input is expected: in this case, input vector has dimension (`2*bit_count + op_count`).
+If `vector=True`, the input is encoded as three 'words': the first operand, the operation, and the second operand. All three are padded to size `ALU_Dataset.embedding_size`, and can be treated with NLP methods like [`SelfAttention`](https://github.com/domschl/ALU_Net/blob/4a0217353dfe40501e821896737fef3a3e3b1a96/keras_custom_layers.py#L143) (see [`keras_custom_layers.py`](https://github.com/domschl/ALU_Net/blob/main/keras_custom_layers.py)).
 
 ### Example results after a short period of training
 
@@ -95,6 +99,7 @@ Since (as far as I know) exporting the complete model for TPUs to local colab (o
 
 ### Notes on experiments
 
+- (2021-12-06) 'word-vector-mode' added for use with self-attention layers.
 - (2021-12-05) ALU_Dataset has been generalized to arbitrary `bit_counts`. It seems that a 16 bit ALU does successfully train all operations. Increasing `bit_count`, works more or less effortless for all operations other than multiplication.
 - (2021-12-01) Multiplication seems to be another case of working once more data and compute is thrown at the problem. 12 dense layers with 1024 neurons and additive residuals between each layer achieves 87% ok after about 100 epochs...
 - (2021-11-30) Most difficult operation for the net to learn is always `*`. All bitwise operations and comparisations are usually learned quickly with almost any architecture, followed by `+`, `-` and interestingly also `/` and even `%`. Why this experiment has so much more difficulties in learning how to multiply is currently unknown. Interestingly, if ALU operations are restricted to just `*` (by setting `valid_ops=['*']`), again almost all network architectures start to learn multiplication within a short timespan at least to some degree. Why this doesn't work in the same way with all operations enabled is currently unknown. 
