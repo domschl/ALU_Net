@@ -181,6 +181,7 @@ class MultiHeadSelfAttention(layers.Layer):
             self.mhsa.append(SelfAttention(self.units))
         self.cc = layers.Concatenate(axis=1)
         self.pm = layers.Permute((2,1))
+        self.ln = layers.LayerNormalization()
 
     def build(self, input_shape):
         self.w_heads = self.add_weight(shape=(input_shape[-1], input_shape[-1]),
@@ -214,4 +215,5 @@ class MultiHeadSelfAttention(layers.Layer):
             x = self.pm(x)
             x = tf.matmul(x, self.w_xheads)
             x = self.pm(x)
+            x = self.ln(x)
         return x
