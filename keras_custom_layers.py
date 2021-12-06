@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import tensorflow.keras as keras
 from tensorflow.keras import layers
+import math
 
 class ResidualBlock(layers.Layer):
     def __init__(self, units, highway=False, **kwargs):
@@ -138,3 +139,35 @@ class ParallelResidualDenseStacks(layers.Layer):
         x=self.rescale(x)
         x=self.rescale_relu(x)
         return x
+
+class SelfAttention(layers.Layer):
+    def __init__(self, units, **kwargs):
+        super(SelfAttention, self).__init__(**kwargs)
+        self.units=units
+    
+    def build(self, input_shape):
+        self.w_keys = self.add_weight(shape=(input_shape[-1], self.units),
+                                      initializer="random_normal", trainable=True)
+        self.w_queries = self.add_weight(shape=(input_shape[-1], self.units),
+                                      initializer="random_normal", trainable=True)
+        self.w_values = self.add_weight(shape=(input_shape[-1], input_shape[-1]),
+                                      initializer="random_normal", trainable=True)
+        self.softmax = layers.Softmax()
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            'units': self.units
+        })
+        return config 
+
+    def call(self, inputs):
+        vk = tf.matmul(inputs, self.w_keys)
+        vq = tf.matmul(inputs, self.w_queries)
+        vv = tf.matmul(inputs, self.w_values)
+        kq = tf.matmul(vk, vq, transpose_b=True)/math.sqrt(self.units)
+        sm = self.softmax(kq)
+        print(sm.shape, vv.shape)
+        out = tf.matmul(sm, vv)
+        print(out.shape)
+        return out

@@ -33,6 +33,12 @@ class ALU_Dataset():
                             self.bor_smpl, self.xor_smpl, self.greater_smpl,
                             self.lesser_smpl, self.eq_smpl, self.neq_smpl]
         self.bit_count = bit_count
+        self.op_count = len(self.model_ops)
+        if self.bit_count+1 > self.op_count:
+            self.embedding_size = self.bit_count+1
+        else:
+            self.embedding_size = self.op_count
+        self.pre_weight = pre_weight
         self.all_bits_one = 2**self.bit_count - 1
         self.true_vect = self.all_bits_one
         self.false_vect = 0
@@ -69,7 +75,7 @@ class ALU_Dataset():
                 return i
         return -1
 
-    def get_data_point(self, equal_distrib=False, valid_ops=None):
+    def get_data_point(self, equal_distrib=False, valid_ops=None, vector=False):
         """ Get a random example for on ALU operation for training """
         result = -1
         op1 = self.get_random_bits(self.bit_count)
@@ -106,7 +112,7 @@ class ALU_Dataset():
                 rx += self.model_dis[op_index]
                 if rx > rrx:
                     break
-        return self.encode_op(op1, op2, op_index)
+        return self.encode_op(op1, op2, op_index, vector=vector)
 
     def generator(self, samples=20000, equal_distrib=False, valid_ops=None):
         while True:
@@ -114,7 +120,7 @@ class ALU_Dataset():
             #x, Y, _, _, _ = self.get_data_point(equal_distrib=equal_distrib, valid_ops=valid_ops)
             yield x, Y
 
-    def encode_op(self, op1, op2, op_index):
+    def encode_op(self, op1, op2, op_index, vector=False):
         """ turn two ints and operation into training data """
         op1, op2, result = self.model_funcs[op_index](op1, op2)
         if self.model_is_boolean[op_index] is True:
@@ -127,10 +133,15 @@ class ALU_Dataset():
         else:
             str_result=result
         sym = f"{op1} {self.model_ops[op_index]} {op2} = {str_result}"
-        inp = np.concatenate(
-            [self.int_to_binary_vect(op1, num_bits=self.bit_count+1),
-            self.int_to_onehot_vect(op_index, num_bits=len(self.model_ops)),
-            self.int_to_binary_vect(op2, num_bits=self.bit_count+1)])
+        if vector is True:
+            inp = np.array([self.int_to_binary_vect(op1, num_bits=self.embedding_size),
+                self.int_to_onehot_vect(op_index, num_bits=self.embedding_size),
+                self.int_to_binary_vect(op2, num_bits=self.embedding_size)], dtype=np.float32)
+        else:
+            inp = np.concatenate(
+                [self.int_to_binary_vect(op1, num_bits=self.bit_count+1),
+                self.int_to_onehot_vect(op_index, num_bits=len(self.model_ops)),
+                self.int_to_binary_vect(op2, num_bits=self.bit_count+1)])
 
         oup = self.int_to_binary_vect(result, num_bits=self.output_size)
         return inp, oup, result, op_index, sym
@@ -266,6 +277,38 @@ class ALU_Dataset():
                 x, y, _, _, _ = self.get_data_point(
                     equal_distrib=True, valid_ops=valid_ops)
             dpx[i, :] = x
+            dpy[i, :] = y
+        if verbose is True:
+            print()
+        return dpx, dpy
+
+    def create_vector_training_data(self, samples=10000, valid_ops=None, verbose=True, title=None):
+        """ create a number of training samples """
+        x, y, _, _, _ = self.get_data_point()
+        dpx = np.zeros((samples, 3, self.embedding_size), dtype=np.float32)
+        dpy = np.zeros((samples, len(y)), dtype=np.float32)
+        if verbose is True:
+            if title is None:
+                print(f"Creating {samples} data points (. = 1000 progress)")
+            else:
+                print(f"{title}: Creating {samples} data points (. = 1000 progress)")
+
+        for i in range(0, samples):
+            if verbose is True:
+                if i%100000 == 0:
+                    print(f"{i:>10} ", end="")
+            if (i+1) % 1000 == 0:
+                if verbose is True:
+                    print(".", end="")
+                    sys.stdout.flush()
+                    if (i+1) % 100000 == 0:
+                        print()
+            if valid_ops is None:
+                x, y, _, _, _ = self.get_data_point(equal_distrib=False, vector=True)
+            else:
+                x, y, _, _, _ = self.get_data_point(
+                    equal_distrib=True, valid_ops=valid_ops, vector=True)
+            dpx[i, :, :] = x
             dpy[i, :] = y
         if verbose is True:
             print()
