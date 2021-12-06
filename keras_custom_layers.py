@@ -150,7 +150,7 @@ class SelfAttention(layers.Layer):
                                       initializer="random_normal", trainable=True)
         self.w_queries = self.add_weight(shape=(input_shape[-1], self.units),
                                       initializer="random_normal", trainable=True)
-        self.w_values = self.add_weight(shape=(input_shape[-1], input_shape[-1]),
+        self.w_values = self.add_weight(shape=(input_shape[-1], input_shape[-1]), # unusual symmetry?
                                       initializer="random_normal", trainable=True)
         self.softmax = layers.Softmax()
 
@@ -167,7 +167,5 @@ class SelfAttention(layers.Layer):
         vv = tf.matmul(inputs, self.w_values)
         kq = tf.matmul(vk, vq, transpose_b=True)/math.sqrt(self.units)
         sm = self.softmax(kq)
-        print(sm.shape, vv.shape)
         out = tf.matmul(sm, vv)
-        print(out.shape)
         return out
