@@ -151,16 +151,16 @@ class SelfAttention(layers.Layer):
         # super(SelfAttention, self).build(input_shape)
         self.fact = math.sqrt(input_shape[1])
         if self.units is None:
-            dim2 = input_shape[1]
+            dim2 = input_shape[-1]
         else:
             dim2 = self.units
-            self.scale = self.add_weight(shape=(dim2, input_shape[1]),
+            self.scale = self.add_weight(shape=(dim2, input_shape[-1]),
                                       initializer="random_normal", name='w1', trainable=True)
-        self.w_keys = self.add_weight(shape=(input_shape[1], dim2),
+        self.w_keys = self.add_weight(shape=(input_shape[-1], dim2),
                                       initializer="random_normal", name='w2', trainable=True)
-        self.w_queries = self.add_weight(shape=(input_shape[1], dim2),
+        self.w_queries = self.add_weight(shape=(input_shape[-1], dim2),
                                       initializer="random_normal", name='w3', trainable=True)
-        self.w_values = self.add_weight(shape=(input_shape[1], dim2),
+        self.w_values = self.add_weight(shape=(input_shape[-1], dim2),
                                       initializer="random_normal", name='w4', trainable=True)
 
     def get_config(self):
@@ -171,17 +171,17 @@ class SelfAttention(layers.Layer):
         return config 
 
     def call(self, inputs):
-        ip = self.pm(inputs)
-        vk = tf.matmul(ip, self.w_keys)
-        vq = tf.matmul(ip, self.w_queries)
-        vv = tf.matmul(ip, self.w_values)
+        # ip = self.pm(inputs)
+        vk = tf.matmul(inputs, self.w_keys)
+        vq = tf.matmul(inputs, self.w_queries)
+        vv = tf.matmul(inputs, self.w_values)
         kq = tf.matmul(vk, vq, transpose_b=True)/self.fact
         sm = self.softmax(kq)
         # print(f"sm={sm.shape}, vv={vv.shape}")
         out = tf.matmul(sm, self.pm(vv), transpose_b=True)
         if self.units is not None:
             out = tf.matmul(out, self.scale)
-        out = self.pm(out)
+        # out = self.pm(out)
         return out
 
 class MultiHeadSelfAttention(layers.Layer):
@@ -200,7 +200,7 @@ class MultiHeadSelfAttention(layers.Layer):
 
     def build(self, input_shape):
         # super(SelfAttention, self).build(input_shape)
-        self.w_heads = self.add_weight(shape=(self.heads * input_shape[1], input_shape[1]),
+        self.w_heads = self.add_weight(shape=(self.heads * input_shape[-1], input_shape[-1]),
                                       initializer="random_normal", name='w5', trainable=True)
                                     
     def get_config(self):
@@ -214,12 +214,10 @@ class MultiHeadSelfAttention(layers.Layer):
     def call(self, inputs):
         xa=[]
         for i in range(0, self.heads):
-            xa.append(self.mhsa[i](inputs))
-        x=self.cc(xa)
+            xa.append(self.pm(self.mhsa[i](inputs)))
+        x=self.pm(self.cc(xa))
         x = self.ln1(x)
-        x=self.pm(x)
         x = tf.matmul(x, self.w_heads)
-        x = self.pm(x)
         x = self.relu(x)
         x = self.ln2(x)
         return x
