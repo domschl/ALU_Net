@@ -155,13 +155,13 @@ class SelfAttention(layers.Layer):
         else:
             dim2 = self.units
             self.scale = self.add_weight(shape=(dim2, input_shape[1]),
-                                      initializer="random_normal", trainable=True)
+                                      initializer="random_normal", name='w1', trainable=True)
         self.w_keys = self.add_weight(shape=(input_shape[1], dim2),
-                                      initializer="random_normal", trainable=True)
+                                      initializer="random_normal", name='w2', trainable=True)
         self.w_queries = self.add_weight(shape=(input_shape[1], dim2),
-                                      initializer="random_normal", trainable=True)
+                                      initializer="random_normal", name='w3', trainable=True)
         self.w_values = self.add_weight(shape=(input_shape[1], dim2),
-                                      initializer="random_normal", trainable=True)
+                                      initializer="random_normal", name='w4', trainable=True)
 
     def get_config(self):
         config = super().get_config()
@@ -201,7 +201,7 @@ class MultiHeadSelfAttention(layers.Layer):
     def build(self, input_shape):
         # super(SelfAttention, self).build(input_shape)
         self.w_heads = self.add_weight(shape=(self.heads * input_shape[1], input_shape[1]),
-                                      initializer="random_normal", trainable=True)
+                                      initializer="random_normal", name='w5', trainable=True)
                                     
     def get_config(self):
         config = super().get_config()
