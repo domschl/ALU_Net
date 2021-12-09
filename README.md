@@ -99,6 +99,7 @@ Since (as far as I know) exporting the complete model for TPUs to local colab (o
 
 ### Notes on experiments
 
+- (2021-12-09) Positional encoding is crucial for self-attention, since it doesn't know about order. Each of the three word-vectors for op1, operation, and op2 has now three bits added, '1 0 0' for op1, '0 1 0' for operation and '0 0 1' for op2.
 - (2021-12-06) 'word-vector-mode' added for use with self-attention layers.
 - (2021-12-05) ALU_Dataset has been generalized to arbitrary `bit_counts`. It seems that a 16 bit ALU does successfully train all operations. Increasing `bit_count`, works more or less effortless for all operations other than multiplication.
 - (2021-12-01) Multiplication seems to be another case of working once more data and compute is thrown at the problem. 12 dense layers with 1024 neurons and additive residuals between each layer achieves 87% ok after about 100 epochs...
