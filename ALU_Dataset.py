@@ -416,7 +416,7 @@ class ALU_Dataset():
                 result_vect_ints.append(int_result)
         return result_vect_ints
 
-    def check_results(self, model, samples=1000, vector=False, valid_ops=None, verbose=False):
+    def check_results(self, model, samples=1000, vector=False, positional_encoding=True, valid_ops=None, verbose=False):
         """ Run a number of tests on trained model """
         ok = 0
         err = 0
@@ -424,7 +424,7 @@ class ALU_Dataset():
         opok = [0]*len(self.model_ops)
         for _ in range(0, samples):
             x, _, z, op, s = self.get_data_point(
-                equal_distrib=True, vector=vector, valid_ops=valid_ops)
+                equal_distrib=True, vector=vector, positional_encoding=positional_encoding, valid_ops=valid_ops)
             res = self.decode_results(model.predict(np.array([x])))
             if res[0] == z:
                 ok += 1
