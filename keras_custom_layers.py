@@ -44,7 +44,8 @@ class ResidualDense(layers.Layer):
         self.regularizer=regularizer
         super(ResidualDense, self).__init__(**kwargs)
         if self.regularizer != 0:
-            self.dense1 = layers.Dense(self.units, kernel_regularizer=keras.regularizers.l2(self.regularizer))
+            self.dense1 = layers.Dense(self.units, 
+                                       kernel_regularizer=keras.regularizers.l2(self.regularizer))
         else:
             self.dense1 = layers.Dense(self.units)       
         self.bn1 = layers.BatchNormalization()
@@ -107,11 +108,13 @@ class ParallelResidualDenseStacks(layers.Layer):
 
         self.rds=[]
         for _ in range(0, self.stacks):
-            self.rds.append(ResidualDenseStack(self.units, self.layer_count, regularizer=self.regularizer))
+            self.rds.append(ResidualDenseStack(self.units, self.layer_count, 
+                                               regularizer=self.regularizer))
         self.rescale_relu = layers.ReLU()
         self.concat = layers.Concatenate()
         if self.regularizer != 0:
-            self.rescale = layers.Dense(self.units, kernel_regularizer=keras.regularizers.l2(self.regularizer))
+            self.rescale = layers.Dense(self.units, 
+                                        kernel_regularizer=keras.regularizers.l2(self.regularizer))
         else:
             self.rescale = layers.Dense(self.units)
 
@@ -149,7 +152,7 @@ class SelfAttention(layers.Layer):
 
     def build(self, input_shape):
         # super(SelfAttention, self).build(input_shape)
-        self.fact = math.sqrt(input_shape[1])
+        self.fact = math.sqrt(input_shape[-1])
         if self.units is None:
             dim2 = input_shape[-1]
         else:
