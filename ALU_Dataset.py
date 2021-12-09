@@ -294,7 +294,11 @@ class ALU_Dataset():
     def create_vector_training_data(self, samples=10000, valid_ops=None, verbose=True, title=None, positional_encoding=True):
         """ create a number of training samples """
         x, y, _, _, _ = self.get_data_point()
-        dpx = np.zeros((samples, 3, self.embedding_size), dtype=np.float32)
+        if positional_encoding is True:
+            sz=self.embedding_size+3
+        else:
+            sz=self.embedding_size
+        dpx = np.zeros((samples, 3, sz), dtype=np.float32)
         dpy = np.zeros((samples, len(y)), dtype=np.float32)
         if verbose is True:
             if title is None:
