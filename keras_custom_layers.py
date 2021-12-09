@@ -148,7 +148,8 @@ class SelfAttention(layers.Layer):
         super(SelfAttention, self).__init__(**kwargs)
         self.pm = layers.Permute((2,1))
         self.units = units
-        self.softmax = layers.Softmax()
+        # self.norm = layers.Softmax()
+        self.norm = layers.Normalization()
 
     def build(self, input_shape):
         # super(SelfAttention, self).build(input_shape)
@@ -180,9 +181,9 @@ class SelfAttention(layers.Layer):
         vv = tf.matmul(inputs, self.w_values)
         kq = tf.matmul(vk, vq, transpose_b=True)
         kqs = kq/self.fact
-        sm = self.softmax(kqs)
+        sn = self.norm(kqs)
         # print(f"sm={sm.shape}, vv={vv.shape}")
-        out = tf.matmul(sm, self.pm(vv), transpose_b=True)
+        out = tf.matmul(sn, self.pm(vv), transpose_b=True)
         if self.units is not None:
             out = tf.matmul(out, self.scale)
         # out = self.pm(out)
@@ -198,15 +199,16 @@ class MultiHeadSelfAttention(layers.Layer):
             self.mhsa.append(SelfAttention(units=self.units))
         self.cc = layers.Concatenate(axis=1)
         self.pm = layers.Permute((2,1))
-        # self.ln1 = layers.LayerNormalization()
-        # self.ln2 = layers.LayerNormalization()
-        # self.relu = layers.GeLU()
+        self.ln1 = layers.LayerNormalization()
+        self.ln2 = layers.LayerNormalization()
+        self.relu = layers.ReLU()
 
     def build(self, input_shape):
         # super(SelfAttention, self).build(input_shape)
         self.w_heads = self.add_weight(shape=(self.heads * input_shape[-1], input_shape[-1]),
                                       initializer="random_normal", name='w5', trainable=True)
-                                    
+        self.lin = self.add_weight(shape=(input_shape[-1], input_shape[-1]),
+                                      initializer="random_normal", name='w6', trainable=True)
     def get_config(self):
         config = super().get_config()
         config.update({
@@ -219,9 +221,10 @@ class MultiHeadSelfAttention(layers.Layer):
         xa=[]
         for i in range(0, self.heads):
             xa.append(self.pm(self.mhsa[i](inputs)))
-        x=self.pm(self.cc(xa))
-        # x = self.ln1(x)
-        x = tf.matmul(x, self.w_heads)
-        # x = self.relu(x)
-        # x = self.ln2(x)
+        x=self.pm(self.cc(xa)) + inputs
+        xt = self.ln1(x)
+        x = tf.matmul(xt, self.w_heads)
+        x = self.relu(x)
+        x = tf.matmul(x, self.lin) + xt
+        x = self.ln2(x)
         return x
