@@ -19,7 +19,7 @@ The result of the network is a `bit_count` bit integer again binary encoded. The
 ### Input modes
 
 If `vector=False` in notebook, a linear input is expected: in this case, input vector has dimension (`2*bit_count + op_count`).
-If `vector=True`, the input is encoded as three 'words': the first operand, the operation, and the second operand. All three are padded to size `ALU_Dataset.embedding_size`, and can be treated with NLP methods like [`SelfAttention`](https://github.com/domschl/ALU_Net/blob/4a0217353dfe40501e821896737fef3a3e3b1a96/keras_custom_layers.py#L143) (see [`keras_custom_layers.py`](https://github.com/domschl/ALU_Net/blob/main/keras_custom_layers.py)).
+If `vector=True`, the input is encoded as three 'words': the first operand, the operation, and the second operand. All three are padded to size `ALU_Dataset.embedding_size`, and can be treated with NLP methods like [`SelfAttention`](https://github.com/domschl/ALU_Net/blob/4a0217353dfe40501e821896737fef3a3e3b1a96/keras_custom_layers.py#L143) (see [`keras_custom_layers.py`](https://github.com/domschl/ALU_Net/blob/main/keras_custom_layers.py)). Since Attention doesn't know about the order of tokens, three bits are appended for each of the three input vectors, the index of the vector is one-hot encoded in those three bits. That way attention can discriminate between op1, operation and op2.
 
 ### Example results after a short period of training
 
