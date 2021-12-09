@@ -220,8 +220,8 @@ class MultiHeadSelfAttention(layers.Layer):
     def call(self, inputs):
         xa=[]
         for i in range(0, self.heads):
-            xa.append(self.pm(self.mhsa[i](inputs)))
-        x=self.pm(self.cc(xa)) + inputs
+            xa.append(self.pm(self.mhsa[i](inputs)+inputs))
+        x=self.pm(self.cc(xa))
         xt = self.ln1(x)
         x = tf.matmul(xt, self.w_heads)
         x = self.relu(x)
