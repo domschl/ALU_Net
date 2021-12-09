@@ -77,7 +77,7 @@ class ALU_Dataset():
 
     def get_data_point(self, equal_distrib=False, valid_ops=None, vector=False, positional_encoding=False):
         """ Get a random example for on ALU operation for training """
-        result = -1
+        # result = -1
         op1 = self.get_random_bits(self.bit_count)
         op2 = self.get_random_bits(self.bit_count)
         if valid_ops is not None and len(valid_ops)==0:
@@ -351,6 +351,8 @@ class ALU_Dataset():
                 infix=""
             if vector is True:
                 infix+="_VECT"
+            if positional_encoding is True:
+                infix+="_PE"
             cache_file_x=os.path.join(cache_path, f"{name}_{infix}_{self.bit_count}_{samples}_x.npy")
             cache_file_Y=os.path.join(cache_path, f"{name}_{infix}_{self.bit_count}_{samples}_Y.npy")
         if use_cache is True  and regenerate_cached_data is False and os.path.exists(cache_file_x) and os.path.exists(cache_file_Y):
