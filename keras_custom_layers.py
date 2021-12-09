@@ -178,8 +178,9 @@ class SelfAttention(layers.Layer):
         vk = tf.matmul(inputs, self.w_keys)
         vq = tf.matmul(inputs, self.w_queries)
         vv = tf.matmul(inputs, self.w_values)
-        kq = tf.matmul(vk, vq, transpose_b=True)/self.fact
-        sm = self.softmax(kq)
+        kq = tf.matmul(vk, vq, transpose_b=True)
+        kqs = kq/self.fact
+        sm = self.softmax(kqs)
         # print(f"sm={sm.shape}, vv={vv.shape}")
         out = tf.matmul(sm, self.pm(vv), transpose_b=True)
         if self.units is not None:
@@ -197,9 +198,9 @@ class MultiHeadSelfAttention(layers.Layer):
             self.mhsa.append(SelfAttention(units=self.units))
         self.cc = layers.Concatenate(axis=1)
         self.pm = layers.Permute((2,1))
-        self.ln1 = layers.LayerNormalization()
-        self.ln2 = layers.LayerNormalization()
-        self.relu = layers.ReLU()
+        # self.ln1 = layers.LayerNormalization()
+        # self.ln2 = layers.LayerNormalization()
+        # self.relu = layers.GeLU()
 
     def build(self, input_shape):
         # super(SelfAttention, self).build(input_shape)
@@ -219,8 +220,8 @@ class MultiHeadSelfAttention(layers.Layer):
         for i in range(0, self.heads):
             xa.append(self.pm(self.mhsa[i](inputs)))
         x=self.pm(self.cc(xa))
-        x = self.ln1(x)
+        # x = self.ln1(x)
         x = tf.matmul(x, self.w_heads)
-        x = self.relu(x)
-        x = self.ln2(x)
+        # x = self.relu(x)
+        # x = self.ln2(x)
         return x
