@@ -148,8 +148,8 @@ class SelfAttention(layers.Layer):
         super(SelfAttention, self).__init__(**kwargs)
         self.pm = layers.Permute((2,1))
         self.units = units
-        # self.norm = layers.Softmax()
-        self.norm = layers.Normalization()
+        self.norm = layers.Softmax()
+        # self.norm = layers.Normalization()
 
     def build(self, input_shape):
         # super(SelfAttention, self).build(input_shape)
