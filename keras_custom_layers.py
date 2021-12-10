@@ -144,12 +144,15 @@ class ParallelResidualDenseStacks(layers.Layer):
         return x
 
 class SelfAttention(layers.Layer):
-    def __init__(self, units=None, **kwargs):
+    def __init__(self, units=None, norm=None, **kwargs):
         super(SelfAttention, self).__init__(**kwargs)
         self.pm = layers.Permute((2,1))
         self.units = units
-        self.norm = layers.Softmax()
-        # self.norm = layers.Normalization()
+        self.norm = norm
+        if self.norm=="layernorm":
+            self.norm = layers.BatchNormalization()
+        else:
+            self.norm = layers.Softmax()
 
     def build(self, input_shape):
         # super(SelfAttention, self).build(input_shape)
@@ -170,7 +173,8 @@ class SelfAttention(layers.Layer):
     def get_config(self):
         config = super().get_config()
         config.update({
-            'units': self.units
+            'units': self.units,
+            'norm': self.norm
         })
         return config 
 
@@ -190,13 +194,14 @@ class SelfAttention(layers.Layer):
         return out
 
 class MultiHeadSelfAttention(layers.Layer):
-    def __init__(self, heads, units=None, **kwargs):
+    def __init__(self, heads, units=None, norm=None, **kwargs):
         super(MultiHeadSelfAttention, self).__init__(**kwargs)
         self.heads=heads
         self.units = units
+        self.norm = norm
         self.mhsa=[]
         for _ in range(0,self.heads):
-            self.mhsa.append(SelfAttention(units=self.units))
+            self.mhsa.append(SelfAttention(units=self.units, norm=self.norm))
         self.cc = layers.Concatenate(axis=1)
         self.pm = layers.Permute((2,1))
         self.ln1 = layers.LayerNormalization()
@@ -213,7 +218,8 @@ class MultiHeadSelfAttention(layers.Layer):
         config = super().get_config()
         config.update({
             'heads': self.heads,
-            'units': self.units
+            'units': self.units,
+            'norm': self.norm
         })
         return config
 
