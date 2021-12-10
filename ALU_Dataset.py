@@ -125,8 +125,7 @@ class ALU_Dataset():
         op1, op2, result = self.model_funcs[op_index](op1, op2)
         if self.model_is_boolean[op_index] is True:
             if result==self.false_vect:
-                str_result="False"
-            elif result==self.true_vect:
+
                 str_result="True"
             else:
                 str_result="undefined"
@@ -251,13 +250,13 @@ class ALU_Dataset():
             result = self.false_vect
         return op1, op2, result
 
-    def create_data_point(self, op1, op2, op_string):
+    def create_data_point(self, op1, op2, op_string, vector=False, positional_suffix=False):
         """ create training data from given ints op1, op2 and op_string """
         op_index = self.op_string_to_index(op_string)
         if op_index == -1:
             print(f"Invalid operation {op_string}")
             return np.array([]), np.array([]), -1, -1, None
-        return self.encode_op(op1, op2, op_index)
+        return self.encode_op(op1, op2, op_index, vector, positional_suffix)
 
     def create_training_data(self, samples=10000, valid_ops=None, verbose=True, title=None):
         """ create a number of training samples """
