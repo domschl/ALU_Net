@@ -194,11 +194,14 @@ class SelfAttention(layers.Layer):
         return out
 
 class MultiHeadSelfAttention(layers.Layer):
-    def __init__(self, heads, units=None, norm=None, **kwargs):
+    def __init__(self, heads, units=None, norm=None, mh_normalize=True,
+            final_relu=False, **kwargs):
         super(MultiHeadSelfAttention, self).__init__(**kwargs)
         self.heads=heads
         self.units = units
         self.norm = norm
+        self.mh_normalize = mh_normalize
+        self.final_relu = final_relu
         self.mhsa=[]
         for _ in range(0,self.heads):
             self.mhsa.append(SelfAttention(units=self.units, norm=self.norm))
@@ -208,7 +211,7 @@ class MultiHeadSelfAttention(layers.Layer):
             self.ln1 = layers.LayerNormalization()
             self.ln2 = layers.LayerNormalization()
         self.relu1 = layers.ReLU()
-        if second_relu is True:
+        if final_relu is True:
             self.relu2 = layers.ReLU()
         self.relu2 = layers.ReLU()
 
@@ -223,7 +226,9 @@ class MultiHeadSelfAttention(layers.Layer):
         config.update({
             'heads': self.heads,
             'units': self.units,
-            'norm': self.norm
+            'norm': self.norm,
+            'mh_normalize': self.mh_normalize,
+            'final_relu': self.final_relu
         })
         return config
 
@@ -232,9 +237,13 @@ class MultiHeadSelfAttention(layers.Layer):
         for i in range(0, self.heads):
             xa.append(self.pm(self.mhsa[i](inputs)+inputs))
         x=self.pm(self.cc(xa))
-        x = self.ln1(x)
+        if self.mh_normalize is True:
+            x = self.ln1(x)
         xt = tf.matmul(x, self.w_heads)
-        x = self.relu(xt)
+        x = self.relu1(xt)
         x = tf.matmul(x, self.lin) + xt
-        x = self.ln2(x)
+        if self.mh_normalize is True:
+            x = self.ln2(x)
+        if self.final_relu is True:
+            x = self.relu2(x)
         return x
