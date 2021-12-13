@@ -185,18 +185,24 @@ class SelfAttention(layers.Layer):
         return out
 
 class MultiHeadSelfAttention(layers.Layer):
-    def __init__(self, heads, units=None, **kwargs):
+    def __init__(self, heads, units=None, mh_normalize=True, final_relu=False, **kwargs):
         super(MultiHeadSelfAttention, self).__init__(**kwargs)
         self.heads=heads
         self.units = units
+        self.mh_normalize = mh_normalize
+        self.final_relu = final_relu
         self.mhsa=[]
         for _ in range(0,self.heads):
             self.mhsa.append(SelfAttention(units=self.units))
         self.cc = layers.Concatenate(axis=1)
         self.pm = layers.Permute((2,1))
-        self.ln1 = layers.LayerNormalization()
-        self.ln2 = layers.LayerNormalization()
-        self.relu = layers.ReLU()
+        if self.mh_normalize is True:
+            self.ln1 = layers.LayerNormalization()
+            self.ln2 = layers.LayerNormalization()
+        self.relu1 = layers.ReLU()
+        if second_relu is True:
+            self.relu2 = layers.ReLU()
+        self.relu2 = layers.ReLU()
 
     def build(self, input_shape):
         # super(SelfAttention, self).build(input_shape)
@@ -207,7 +213,9 @@ class MultiHeadSelfAttention(layers.Layer):
         config = super().get_config()
         config.update({
             'heads': self.heads,
-            'units': self.units
+            'units': self.units,
+            'mh_normalize': self.mh_normalize,
+            'final_relu': self.final_relu
         })
         return config
 
@@ -216,8 +224,11 @@ class MultiHeadSelfAttention(layers.Layer):
         for i in range(0, self.heads):
             xa.append(self.pm(self.mhsa[i](inputs)))
         x=self.pm(self.cc(xa))
-        x = self.ln1(x)
+        if self.mh_normalize is True:
+            x = self.ln1(x)
         x = tf.matmul(x, self.w_heads)
         x = self.relu(x)
+        if self.mh_normalize is True:
+            x = self.ln2(x)
         x = self.ln2(x)
         return x
