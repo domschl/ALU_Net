@@ -44,7 +44,8 @@ class ResidualDense(layers.Layer):
         self.regularizer=regularizer
         super(ResidualDense, self).__init__(**kwargs)
         if self.regularizer != 0:
-            self.dense1 = layers.Dense(self.units, kernel_regularizer=keras.regularizers.l2(self.regularizer))
+            self.dense1 = layers.Dense(self.units, 
+                                       kernel_regularizer=keras.regularizers.l2(self.regularizer))
         else:
             self.dense1 = layers.Dense(self.units)       
         self.bn1 = layers.BatchNormalization()
@@ -107,11 +108,13 @@ class ParallelResidualDenseStacks(layers.Layer):
 
         self.rds=[]
         for _ in range(0, self.stacks):
-            self.rds.append(ResidualDenseStack(self.units, self.layer_count, regularizer=self.regularizer))
+            self.rds.append(ResidualDenseStack(self.units, self.layer_count, 
+                                               regularizer=self.regularizer))
         self.rescale_relu = layers.ReLU()
         self.concat = layers.Concatenate()
         if self.regularizer != 0:
-            self.rescale = layers.Dense(self.units, kernel_regularizer=keras.regularizers.l2(self.regularizer))
+            self.rescale = layers.Dense(self.units, 
+                                        kernel_regularizer=keras.regularizers.l2(self.regularizer))
         else:
             self.rescale = layers.Dense(self.units)
 
@@ -141,15 +144,19 @@ class ParallelResidualDenseStacks(layers.Layer):
         return x
 
 class SelfAttention(layers.Layer):
-    def __init__(self, units=None, **kwargs):
+    def __init__(self, units=None, norm=None, **kwargs):
         super(SelfAttention, self).__init__(**kwargs)
         self.pm = layers.Permute((2,1))
         self.units = units
-        self.softmax = layers.Softmax()
+        self.norm = norm
+        if self.norm=="layernorm":
+            self.norm = layers.BatchNormalization()
+        else:
+            self.norm = layers.Softmax()
 
     def build(self, input_shape):
         # super(SelfAttention, self).build(input_shape)
-        self.fact = math.sqrt(input_shape[1])
+        self.fact = math.sqrt(input_shape[-1])
         if self.units is None:
             dim2 = input_shape[-1]
         else:
@@ -166,7 +173,8 @@ class SelfAttention(layers.Layer):
     def get_config(self):
         config = super().get_config()
         config.update({
-            'units': self.units
+            'units': self.units,
+            'norm': self.norm
         })
         return config 
 
@@ -175,25 +183,25 @@ class SelfAttention(layers.Layer):
         vk = tf.matmul(inputs, self.w_keys)
         vq = tf.matmul(inputs, self.w_queries)
         vv = tf.matmul(inputs, self.w_values)
-        kq = tf.matmul(vk, vq, transpose_b=True)/self.fact
-        sm = self.softmax(kq)
+        kq = tf.matmul(vk, vq, transpose_b=True)
+        kqs = kq/self.fact
+        sn = self.norm(kqs)
         # print(f"sm={sm.shape}, vv={vv.shape}")
-        out = tf.matmul(sm, self.pm(vv), transpose_b=True)
+        out = tf.matmul(sn, self.pm(vv), transpose_b=True)
         if self.units is not None:
             out = tf.matmul(out, self.scale)
         # out = self.pm(out)
         return out
 
 class MultiHeadSelfAttention(layers.Layer):
-    def __init__(self, heads, units=None, mh_normalize=True, final_relu=False, **kwargs):
+    def __init__(self, heads, units=None, norm=None, **kwargs):
         super(MultiHeadSelfAttention, self).__init__(**kwargs)
         self.heads=heads
         self.units = units
-        self.mh_normalize = mh_normalize
-        self.final_relu = final_relu
+        self.norm = norm
         self.mhsa=[]
         for _ in range(0,self.heads):
-            self.mhsa.append(SelfAttention(units=self.units))
+            self.mhsa.append(SelfAttention(units=self.units, norm=self.norm))
         self.cc = layers.Concatenate(axis=1)
         self.pm = layers.Permute((2,1))
         if self.mh_normalize is True:
@@ -208,27 +216,25 @@ class MultiHeadSelfAttention(layers.Layer):
         # super(SelfAttention, self).build(input_shape)
         self.w_heads = self.add_weight(shape=(self.heads * input_shape[-1], input_shape[-1]),
                                       initializer="random_normal", name='w5', trainable=True)
-                                    
+        self.lin = self.add_weight(shape=(input_shape[-1], input_shape[-1]),
+                                      initializer="random_normal", name='w6', trainable=True)
     def get_config(self):
         config = super().get_config()
         config.update({
             'heads': self.heads,
             'units': self.units,
-            'mh_normalize': self.mh_normalize,
-            'final_relu': self.final_relu
+            'norm': self.norm
         })
         return config
 
     def call(self, inputs):
         xa=[]
         for i in range(0, self.heads):
-            xa.append(self.pm(self.mhsa[i](inputs)))
+            xa.append(self.pm(self.mhsa[i](inputs)+inputs))
         x=self.pm(self.cc(xa))
-        if self.mh_normalize is True:
-            x = self.ln1(x)
-        x = tf.matmul(x, self.w_heads)
-        x = self.relu(x)
-        if self.mh_normalize is True:
-            x = self.ln2(x)
+        x = self.ln1(x)
+        xt = tf.matmul(x, self.w_heads)
+        x = self.relu(xt)
+        x = tf.matmul(x, self.lin) + xt
         x = self.ln2(x)
         return x

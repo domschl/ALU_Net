@@ -19,7 +19,7 @@ The result of the network is a `bit_count` bit integer again binary encoded. The
 ### Input modes
 
 If `vector=False` in notebook, a linear input is expected: in this case, input vector has dimension (`2*bit_count + op_count`).
-If `vector=True`, the input is encoded as three 'words': the first operand, the operation, and the second operand. All three are padded to size `ALU_Dataset.embedding_size`, and can be treated with NLP methods like [`SelfAttention`](https://github.com/domschl/ALU_Net/blob/4a0217353dfe40501e821896737fef3a3e3b1a96/keras_custom_layers.py#L143) (see [`keras_custom_layers.py`](https://github.com/domschl/ALU_Net/blob/main/keras_custom_layers.py)).
+If `vector=True`, the input is encoded as three 'words': the first operand, the operation, and the second operand. All three are padded to size `ALU_Dataset.embedding_size`, and can be treated with NLP methods like [`SelfAttention`](https://github.com/domschl/ALU_Net/blob/4a0217353dfe40501e821896737fef3a3e3b1a96/keras_custom_layers.py#L143) (see [`keras_custom_layers.py`](https://github.com/domschl/ALU_Net/blob/main/keras_custom_layers.py)). Since Attention doesn't know about the order of tokens, three bits are appended for each of the three input vectors, the index of the vector is one-hot encoded in those three bits. That way attention can discriminate between op1, operation and op2.
 
 ### Example results after a short period of training
 
@@ -99,6 +99,7 @@ Since (as far as I know) exporting the complete model for TPUs to local colab (o
 
 ### Notes on experiments
 
+- (2021-12-09) Positional encoding is crucial for self-attention, since it doesn't know about order. Each of the three word-vectors for op1, operation, and op2 has now three bits added, '1 0 0' for op1, '0 1 0' for operation and '0 0 1' for op2.
 - (2021-12-06) 'word-vector-mode' added for use with self-attention layers.
 - (2021-12-05) ALU_Dataset has been generalized to arbitrary `bit_counts`. It seems that a 16 bit ALU does successfully train all operations. Increasing `bit_count`, works more or less effortless for all operations other than multiplication.
 - (2021-12-01) Multiplication seems to be another case of working once more data and compute is thrown at the problem. 12 dense layers with 1024 neurons and additive residuals between each layer achieves 87% ok after about 100 epochs...

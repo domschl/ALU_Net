@@ -75,9 +75,9 @@ class ALU_Dataset():
                 return i
         return -1
 
-    def get_data_point(self, equal_distrib=False, valid_ops=None, vector=False):
+    def get_data_point(self, equal_distrib=False, valid_ops=None, vector=False, positional_encoding=False):
         """ Get a random example for on ALU operation for training """
-        result = -1
+        # result = -1
         op1 = self.get_random_bits(self.bit_count)
         op2 = self.get_random_bits(self.bit_count)
         if valid_ops is not None and len(valid_ops)==0:
@@ -112,7 +112,7 @@ class ALU_Dataset():
                 rx += self.model_dis[op_index]
                 if rx > rrx:
                     break
-        return self.encode_op(op1, op2, op_index, vector=vector)
+        return self.encode_op(op1, op2, op_index, vector=vector, positional_suffix=positional_encoding)
 
     def generator(self, samples=20000, equal_distrib=False, valid_ops=None):
         while True:
@@ -120,13 +120,12 @@ class ALU_Dataset():
             #x, Y, _, _, _ = self.get_data_point(equal_distrib=equal_distrib, valid_ops=valid_ops)
             yield x, Y
 
-    def encode_op(self, op1, op2, op_index, vector=False):
+    def encode_op(self, op1, op2, op_index, vector=False, positional_suffix=False):
         """ turn two ints and operation into training data """
         op1, op2, result = self.model_funcs[op_index](op1, op2)
         if self.model_is_boolean[op_index] is True:
             if result==self.false_vect:
-                str_result="False"
-            elif result==self.true_vect:
+
                 str_result="True"
             else:
                 str_result="undefined"
@@ -134,9 +133,18 @@ class ALU_Dataset():
             str_result=result
         sym = f"{op1} {self.model_ops[op_index]} {op2} = {str_result}"
         if vector is True:
-            inp = np.array([self.int_to_binary_vect(op1, num_bits=self.embedding_size),
-                self.int_to_onehot_vect(op_index, num_bits=self.embedding_size),
-                self.int_to_binary_vect(op2, num_bits=self.embedding_size)], dtype=np.float32)
+            if positional_suffix is True:
+                sz=self.embedding_size+3
+            else:
+                sz=self.embedding_size
+            v1=self.int_to_binary_vect(op1, num_bits=sz)
+            v2=self.int_to_onehot_vect(op_index, num_bits=sz)
+            v3=self.int_to_binary_vect(op2, num_bits=sz)
+            if positional_suffix is True:
+                v1[-3] = 1.0
+                v2[-2] = 1.0
+                v3[-1] = 1.0
+            inp = np.array([v1,v2,v3], dtype=np.float32)
         else:
             inp = np.concatenate(
                 [self.int_to_binary_vect(op1, num_bits=self.bit_count+1),
@@ -242,13 +250,13 @@ class ALU_Dataset():
             result = self.false_vect
         return op1, op2, result
 
-    def create_data_point(self, op1, op2, op_string):
+    def create_data_point(self, op1, op2, op_string, vector=False, positional_suffix=False):
         """ create training data from given ints op1, op2 and op_string """
         op_index = self.op_string_to_index(op_string)
         if op_index == -1:
             print(f"Invalid operation {op_string}")
             return np.array([]), np.array([]), -1, -1, None
-        return self.encode_op(op1, op2, op_index)
+        return self.encode_op(op1, op2, op_index, vector, positional_suffix)
 
     def create_training_data(self, samples=10000, valid_ops=None, verbose=True, title=None):
         """ create a number of training samples """
@@ -282,10 +290,14 @@ class ALU_Dataset():
             print()
         return dpx, dpy
 
-    def create_vector_training_data(self, samples=10000, valid_ops=None, verbose=True, title=None):
+    def create_vector_training_data(self, samples=10000, valid_ops=None, verbose=True, title=None, positional_encoding=True):
         """ create a number of training samples """
         x, y, _, _, _ = self.get_data_point()
-        dpx = np.zeros((samples, 3, self.embedding_size), dtype=np.float32)
+        if positional_encoding is True:
+            sz=self.embedding_size+3
+        else:
+            sz=self.embedding_size
+        dpx = np.zeros((samples, 3, sz), dtype=np.float32)
         dpy = np.zeros((samples, len(y)), dtype=np.float32)
         if verbose is True:
             if title is None:
@@ -304,17 +316,17 @@ class ALU_Dataset():
                     if (i+1) % 100000 == 0:
                         print()
             if valid_ops is None:
-                x, y, _, _, _ = self.get_data_point(equal_distrib=False, vector=True)
+                x, y, _, _, _ = self.get_data_point(equal_distrib=False, vector=True, positional_encoding=positional_encoding)
             else:
                 x, y, _, _, _ = self.get_data_point(
-                    equal_distrib=True, valid_ops=valid_ops, vector=True)
+                    equal_distrib=True, valid_ops=valid_ops, vector=True, positional_encoding=positional_encoding)
             dpx[i, :, :] = x
             dpy[i, :] = y
         if verbose is True:
             print()
         return dpx, dpy
 
-    def create_dataset(self, samples=10000, batch_size=2000, vector=False, is_training=True, valid_ops=None, name=None, cache_path=None, use_cache=True, regenerate_cached_data=False):
+    def create_dataset(self, samples=10000, batch_size=2000, vector=False, positional_encoding=True, is_training=True, valid_ops=None, name=None, cache_path=None, use_cache=True, regenerate_cached_data=False):
         is_loaded=False
         if use_cache is True and cache_path is None:
             print("can't use cache if no cache_path is given, disabling cache!")
@@ -342,6 +354,8 @@ class ALU_Dataset():
                 infix=""
             if vector is True:
                 infix+="_VECT"
+            if positional_encoding is True:
+                infix+="_PE"
             cache_file_x=os.path.join(cache_path, f"{name}_{infix}_{self.bit_count}_{samples}_x.npy")
             cache_file_Y=os.path.join(cache_path, f"{name}_{infix}_{self.bit_count}_{samples}_Y.npy")
         if use_cache is True  and regenerate_cached_data is False and os.path.exists(cache_file_x) and os.path.exists(cache_file_Y):
@@ -358,7 +372,7 @@ class ALU_Dataset():
         if is_loaded is False:
             if vector is True:
                 x, Y = self.create_vector_training_data(
-                    samples=samples, valid_ops=valid_ops, title=name)
+                    samples=samples, valid_ops=valid_ops, title=name, positional_encoding=positional_encoding)
             else:
                 x, Y = self.create_training_data(samples=samples, valid_ops=valid_ops, title=name)
             if use_cache is True:
@@ -386,10 +400,10 @@ class ALU_Dataset():
             )
         return dataset
 
-    def get_datasets(self, pre_weight=True, samples=100000, validation_samples=10000, batch_size=2000, vector=False, valid_ops=None, cache_path=None, use_cache=True, regenerate_cached_data=False):
-        train = self.create_dataset(samples=samples, batch_size=batch_size, is_training=True, vector=vector, valid_ops=valid_ops,
+    def get_datasets(self, pre_weight=True, samples=100000, validation_samples=10000, batch_size=2000, vector=False, positional_encoding=True, valid_ops=None, cache_path=None, use_cache=True, regenerate_cached_data=False):
+        train = self.create_dataset(samples=samples, batch_size=batch_size, is_training=True, vector=vector, positional_encoding=positional_encoding, valid_ops=valid_ops,
                                         name="train",cache_path=cache_path, use_cache=use_cache, regenerate_cached_data=regenerate_cached_data)
-        val = self.create_dataset(samples=validation_samples, batch_size=batch_size, vector=vector, is_training=False, valid_ops=valid_ops,
+        val = self.create_dataset(samples=validation_samples, batch_size=batch_size, vector=vector, positional_encoding=positional_encoding, is_training=False, valid_ops=valid_ops,
                                     name="validation",cache_path=cache_path, use_cache=use_cache, regenerate_cached_data=regenerate_cached_data)
         return train, val
 
@@ -407,7 +421,7 @@ class ALU_Dataset():
                 result_vect_ints.append(int_result)
         return result_vect_ints
 
-    def check_results(self, model, samples=1000, vector=False, valid_ops=None, verbose=False):
+    def check_results(self, model, samples=1000, vector=False, positional_encoding=True, valid_ops=None, verbose=False):
         """ Run a number of tests on trained model """
         ok = 0
         err = 0
@@ -415,7 +429,7 @@ class ALU_Dataset():
         opok = [0]*len(self.model_ops)
         for _ in range(0, samples):
             x, _, z, op, s = self.get_data_point(
-                equal_distrib=True, vector=vector, valid_ops=valid_ops)
+                equal_distrib=True, vector=vector, positional_encoding=positional_encoding, valid_ops=valid_ops)
             res = self.decode_results(model.predict(np.array([x])))
             if res[0] == z:
                 ok += 1
