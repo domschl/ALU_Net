@@ -94,7 +94,9 @@ Since (as far as I know) exporting the complete model for TPUs to local colab (o
 
 Model 4x512 residual
 
+* Google TPU v2: 29ms / step    (Dataset probably too small for efficient parallelisation)
 * Nvidia 1080ti: 45ms / step
+* Tesla P100: 57ms / step
 * Apple M1: 219ms / step
 
 ## Customizing models and training
