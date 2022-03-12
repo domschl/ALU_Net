@@ -108,6 +108,8 @@ Model 4x512 residual
 
 ### Notes on experiments & History
 
+- (2022-03-12) Dataset and boiler-plate code port to [ml-indie-tools](https://github.com/domschl/ALU_Net) completed. Some benchmarks showing same code
+  being used by Apple M1, Nvidia and TPU via `ml-indie-tools`.
 - (2022-01-06) Python files abstracted and moved to [ml-indie-tools](https://github.com/domschl/ml-indie-tools) [WIP, ongoing]
 - (2021-12-09) Positional encoding is crucial for self-attention, since it doesn't know about order. Each of the three word-vectors for op1, operation, and op2 has now three bits added, '1 0 0' for op1, '0 1 0' for operation and '0 0 1' for op2.
 - (2021-12-06) 'word-vector-mode' added for use with self-attention layers.
