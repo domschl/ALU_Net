@@ -90,6 +90,12 @@ All hardware (Colab GPUs) and local GPUs, with exception of Colab TPUs store the
 
 Since (as far as I know) exporting the complete model for TPUs to local colab (or drive) instances is not supported, TPUs only save the model weights as single file `math_model_*.h5`. It's possible to copy that file from Google Drive to a local jupyter instance and it will be imported on the first run. Thus training from TPUs can be transfered to local machines.
 
+### Performance
+
+Model 4x512 residual
+
+Nvidia 1080ti: 45ms / step
+
 ## Customizing models and training
 
 * The function create_load_model() creates (or loads the state from either Google Drive or local filesystem) one several pre-defined models: e.g. `minimal`, `medium` and `large`, referred in dictionary `model_variants`. To try different models simply at one to this function. At training-time the model is selected by the global `model_variant=`
