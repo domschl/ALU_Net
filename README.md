@@ -1,4 +1,4 @@
-# ALU_Net [WIP]
+# ALU_Net
 
 <a href="https://colab.research.google.com/github/domschl/ALU_Net/blob/main/ALU_Net.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE)
@@ -94,7 +94,8 @@ Since (as far as I know) exporting the complete model for TPUs to local colab (o
 
 Model 4x512 residual
 
-Nvidia 1080ti: 45ms / step
+* Nvidia 1080ti: 45ms / step
+* Apple M1: 219ms / step
 
 ## Customizing models and training
 
